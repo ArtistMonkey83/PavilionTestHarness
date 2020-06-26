@@ -1,0 +1,82 @@
+_base:
+    summary: A test of amg
+    build:
+        modules: [gcc, openmpi/2.1.2]
+        source_path: AMG
+        env:
+            CC: mpicc
+        cmds:
+            - make all
+    scheduler: slurm
+    slurm:
+        num_nodes: 1
+        tasks_per_node: 1
+problem1:
+    inherits_from: _base
+    summary: running AMG's built in problem1
+    run:
+        cmds:
+            - cd test
+            - echo "running problem one"
+            - srun amg -P "{{pvals.pxval}}" "{{pvals.pyval}}" "{{pvals.pzval}}" -n "{{nvals.nxvals}}" "{{nvals.nyvals}}" "{{nvals.nzval}}" -printallstats &> problem1.out
+            - pwd
+    variables:
+        nvals: { nxval: '100', nyval: '100', nzval: '100' }
+        pvals: { pxval: '1', pyval: '1', pzval: '1' }
+    result_parse:
+        constant:
+            Nx:
+                const: "{{nvals.nxval}}"
+            Ny:
+                const: "{{nvals.nyval}}"
+            Nz:
+                const: "{{nvals.nzval}}"
+            Px:
+                const: "{{pvals.pxval}}"
+            Py:
+                const: "{{pvals.pyval}}"
+            Pz:
+                const: "{{pvals.pzval}}"
+        regex:
+            iterations:
+                regex: 'Cum. No. of Iterations = (\d+)'
+                action: store
+                files: 'problem1.out'
+            FOM_1:
+                regex: 'Figure of Merit \\(FOM_1\\):\s+([\S]+)'
+                action: store
+                files: 'problem1.out'
+problem2:
+    inherits_from: _base
+    summary: running AMG's built in problem2
+    variables:
+        nvals: { nxval: '40', nyval: '40', nzval: '40' }
+        pvals: { pxval: '1', pyval: '1', pzval: '1' }
+    run:
+        cmds:
+            - cd test
+            - echo "running problem two"
+            - srun amg -problem 2 -P "{{pvals.pxval}}" "{{pvals.pyval}}" "{{pvals.pzval}}" -n "{{nvals.nxval}}" "{{nvals.nyval}}" "{{nvals.nzval}}" -printallstats &> problem2.out
+    result_parse:
+        constant:
+            Nx:
+                const: "{{nvals.nxval}}"
+            Ny:
+                const: "{{nvals.nyval}}"
+            Nz:
+                const: "{{nvals.nzval}}"
+            Px:
+                const: "{{pvals.pxval}}"
+            Py:
+                const: "{{pvals.pyval}}"
+            Pz:
+                const: "{{pvals.pzval}}"
+        regex:
+            iterations:
+                files: 'problem2.out'
+                regex: 'Cum. No. of Iterations = (\d+)'
+                action: store
+            FOM_2:
+                files: 'problem2.out'
+                regex: 'Figure of Merit \(FOM_2\):\s+([\S]+)'
+                action: store
