@@ -1,6 +1,6 @@
 _base:
 
-    summary: A test of amg
+    summary: Test file to run AMG: multigrid solver for linear systems
 
     build:
         modules: [gcc, openmpi/2.1.2]
@@ -17,7 +17,7 @@ _base:
 
 problem1:
     inherits_from: _base
-    summary: running AMG's built in problem1
+    summary: Problem 1: Laplace based problem on a 3D cube w/ /27 point stencil\n  nvals: define size per processor\n   pvals: define processor topology per part
     variables:
         nvals: { nxval: '100', nyval: '100', nzval: '100' }
         pvals: { pxval: '2', pyval: '2', pzval: '1' }
@@ -55,7 +55,7 @@ problem1:
 
 problem2:
     inherits_from: _base
-    summary: running AMG's built in problem2
+    summary: Problem 2: Simulates non-linear time-dependent problem\n  nvals: define size per processor\n   pvals: define processor topology per part 
     variables:
         nvals: { nxval: '20', nyval: '20', nzval: '20' }
         pvals: { pxval: '2', pyval: '2', pzval: '1' }
@@ -83,6 +83,7 @@ problem2:
                 const: "{{pvals.pzval}}"
         regex:
             iterations:
+                files: 'problem2.out'
                 regex: 'Cum. No. of Iterations = (\d+)'
                 action: store
             fom_2:
