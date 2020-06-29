@@ -17,7 +17,7 @@ _base:
 
 problem1:
     inherits_from: _base
-    summary: Problem 1. Laplace based problem on a 3D cube with 27 point stencil. Nvals define size per processor. Pvals define processor topology per part
+    summary: Problem 1. Laplace based problem on a 3D cube with 27 point stencil.
     variables:
         nvals: { nxval: '100', nyval: '100', nzval: '100' }
         pvals: { pxval: '2', pyval: '2', pzval: '1' }
@@ -55,7 +55,7 @@ problem1:
 
 problem2:
     inherits_from: _base
-    summary: Problem 2. Simulates non-linear time-dependent problem. Nvals define size per processor. Pvals define processor topology per part.
+    summary: Problem 2. Simulates non-linear time-dependent problem.
     variables:
         nvals: { nxval: '20', nyval: '20', nzval: '20' }
         pvals: { pxval: '2', pyval: '2', pzval: '1' }
