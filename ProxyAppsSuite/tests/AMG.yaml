@@ -83,6 +83,7 @@ problem2:
                 const: "{{pvals.pzval}}"
         regex:
             iterations:
+                files: 'problem2.out'
                 regex: 'Cum. No. of Iterations = (\d+)'
                 action: store
             fom_2:
