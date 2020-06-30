@@ -45,7 +45,7 @@ amg:
                 const: "{{problem.pzval}}"
         regex:
             numthreads:
-                regex: "OMP_NUM_THREADS = \'(d+)\'"
+                regex: "OMP_NUM_THREADS = \'(\d+)\'"
                 action: store
                 files: '{{problem.name}}.out'
             iterations:
