@@ -1,13 +1,11 @@
 amg:
-    summary: Prob 1, Laplace problem on a 3D cube with 27 point stencil. Prob 2, Simulates non-linear time-dependent problem.
+    summary: P1. Laplace problem on 3D cube with 27 point stencil. P2. Non-linear time-dependent problem.
     variables:
         problem: 
             - { name: "problem1", nxval: '100', nyval: '100', nzval: '100', pxval: '2', pyval: '2', pzval: '1', flags: '-problem 1' }
             - { name: "problem2", nxval: '20', nyval: '20', nzval: '20', pxval: '2', pyval: '2', pzval: '1', flags: '-problem 2' }
     slurm:
         num_nodes: 4
-        #tasks_per_node will be pxval*pyval*pzval
-        tasks_per_node: 4
     permute_on: problem
     subtitle: '{{problem.name}}'
     run:
