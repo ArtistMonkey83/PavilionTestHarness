@@ -9,11 +9,15 @@ amg:
     permute_on: problem
     subtitle: '{{problem.name}}'
     run:
+        env:
+            OMP_NUM_THREADS: '2'
+            OMP_DISPLAY_ENV: 'VERBOSE'
         timeout: 1000
         cmds:
             - cd test
             - echo "running {{problem.name}}"
-            - srun ./amg {{problem.flags}} -P "{{problem.pxval}}" "{{problem.pyval}}" "{{problem.pzval}}" -n "{{problem.nxval}}" "{{problem.nyval}}" "{{problem.nzval}}" &> {{problem.name}}.out
+            - tasks_per_node={{problem.pxval*problem.pyval*problem.pzval}}
+            - srun -n $tasks_per_node ./amg {{problem.flags}} -P "{{problem.pxval}}" "{{problem.pyval}}" "{{problem.pzval}}" -n "{{problem.nxval}}" "{{problem.nyval}}" "{{problem.nzval}}" &> {{problem.name}}.out
             - cd ..
             - mv test/{{problem.name}}.out {{problem.name}}.out
     build:
@@ -40,6 +44,10 @@ amg:
             pz:
                 const: "{{problem.pzval}}"
         regex:
+            numthreads:
+                regex: "OMP_NUM_THREADS = \'(d+)\'"
+                action: store
+                files: '{{problem.name}}.out'
             iterations:
                 regex: 'Iterations = (\d+)'
                 action: store
