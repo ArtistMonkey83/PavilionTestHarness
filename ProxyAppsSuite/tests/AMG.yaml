@@ -1,7 +1,27 @@
-_base:
-
-    summary: A test of amg
-
+amg:
+    summary: P1. Laplace problem on 3D cube with 27 point stencil. P2. Non-linear time-dependent problem.
+    variables:
+        problem: 
+            - { name: "problem1", nxval: '200', nyval: '200', nzval: '200', pxval: '4', pyval: '3', pzval: '1', flags: '-problem 1' }
+            - { name: "problem2", nxval: '100', nyval: '100', nzval: '100', pxval: '4', pyval: '3', pzval: '1', flags: '-problem 2' }
+    slurm:
+        #can run on multiple nodes
+        num_nodes: 1
+    permute_on: problem
+    subtitle: '{{problem.name}}'
+    run:
+        env:
+            OMP_NUM_THREADS: '2'
+            OMP_DISPLAY_ENV: 'VERBOSE'
+        timeout: 1000
+        cmds:
+            - cd test
+            - echo "running {{problem.name}}"
+            - tasks_per_node={{problem.pxval*problem.pyval*problem.pzval}}
+            - srun -n $tasks_per_node ./amg {{problem.flags}} -P "{{problem.pxval}}" "{{problem.pyval}}" "{{problem.pzval}}" -n "{{problem.nxval}}" "{{problem.nyval}}" "{{problem.nzval}}" &> {{problem.name}}.out
+            - cd ..
+            - mv test/{{problem.name}}.out {{problem.name}}.out
+            - cat {{problem.name}}.out
     build:
         modules: [gcc, openmpi/2.1.2]
         source_path: amg.tar.gz
@@ -9,84 +29,32 @@ _base:
             CC: mpicc
         cmds:
             - make all
-
-    scheduler: slurm
-    slurm:
-        num_nodes: 1
-        tasks_per_node: 4
-
-problem1:
-    inherits_from: _base
-    summary: running AMG's built in problem1
-    variables:
-        nvals: { nxval: '100', nyval: '100', nzval: '100' }
-        pvals: { pxval: '2', pyval: '2', pzval: '1' }
-    run:
-        cmds:
-            - cd test
-            - echo "running problem one"
-            - srun -n 4 amg -P "{{pvals.pxval}}" "{{pvals.pyval}}" "{{pvals.pzval}}" -n "{{nvals.nxval}}" "{{nvals.nyval}}" "{{nvals.nzval}}" &> problem1.out
-            - cd ..
-            - mv test/problem1.out problem1.out
     result_parse:
         constant:
+            problem:
+                const: "{{problem.name}}" 
             nx:
-                const: "{{nvals.nxval}}"
+                const: "{{problem.nxval}}"
             ny:
-                const: "{{nvals.nyval}}"
+                const: "{{problem.nyval}}"
             nz:
-                const: "{{nvals.nzval}}"
+                const: "{{problem.nzval}}"
             px:
-                const: "{{pvals.pxval}}"
+                const: "{{problem.pxval}}"
             py:
-                const: "{{pvals.pyval}}"
+                const: "{{problem.pyval}}"
             pz:
-                const: "{{pvals.pzval}}"
+                const: "{{problem.pzval}}"
         regex:
+            numthreads:
+                regex: "OMP_NUM_THREADS = \'(\d+)\'"
+                action: store
+                files: '{{problem.name}}.out'
             iterations:
                 regex: 'Iterations = (\d+)'
                 action: store
-                files: 'problem1.out'
-            fom_1:
-                regex: 'Figure\s+of\s+Merit\s+\(FOM_1\):\s+([\S]+)'
+                files: '{{problem.name}}.out' 
+            fom:
+                regex: 'Figure\s+of\s+Merit\s+\(FOM_\d\):\s+([\S]+)'
                 action: store
-                files: 'problem1.out'
-
-
-problem2:
-    inherits_from: _base
-    summary: running AMG's built in problem2
-    variables:
-        nvals: { nxval: '20', nyval: '20', nzval: '20' }
-        pvals: { pxval: '2', pyval: '2', pzval: '1' }
-    run:
-        timeout: 1000
-        cmds:
-            - cd test
-            - echo "running problem two"
-            - srun -n 4 amg -problem 2 -P "{{pvals.pxval}}" "{{pvals.pyval}}" "{{pvals.pzval}}" -n "{{nvals.nxval}}" "{{nvals.nyval}}" "{{nvals.nzval}}" &> problem2.out
-            - cd ..
-            - mv test/problem2.out problem2.out
-    result_parse:
-        constant:
-            nx:
-                const: "{{nvals.nxval}}"
-            ny:
-                const: "{{nvals.nyval}}"
-            nz:
-                const: "{{nvals.nzval}}"
-            px:
-                const: "{{pvals.pxval}}"
-            py:
-                const: "{{pvals.pyval}}"
-            pz:
-                const: "{{pvals.pzval}}"
-        regex:
-            iterations:
-                regex: 'Cum. No. of Iterations = (\d+)'
-                action: store
-            fom_2:
-                files: 'problem2.out'
-                regex: 'Figure\s+of\s+Merit\s+\(FOM_2\):\s+([\S]+)'
-                action: store
-
+                files: '{{problem.name}}.out'
