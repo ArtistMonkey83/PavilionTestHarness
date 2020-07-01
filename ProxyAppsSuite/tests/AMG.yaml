@@ -2,10 +2,11 @@ amg:
     summary: P1. Laplace problem on 3D cube with 27 point stencil. P2. Non-linear time-dependent problem.
     variables:
         problem: 
-            - { name: "problem1", nxval: '100', nyval: '100', nzval: '100', pxval: '2', pyval: '2', pzval: '1', flags: '-problem 1' }
-            - { name: "problem2", nxval: '20', nyval: '20', nzval: '20', pxval: '2', pyval: '2', pzval: '1', flags: '-problem 2' }
+            - { name: "problem1", nxval: '200', nyval: '200', nzval: '200', pxval: '4', pyval: '3', pzval: '1', flags: '-problem 1' }
+            - { name: "problem2", nxval: '100', nyval: '100', nzval: '100', pxval: '4', pyval: '3', pzval: '1', flags: '-problem 2' }
     slurm:
-        num_nodes: 4
+        #can run on multiple nodes
+        num_nodes: 1
     permute_on: problem
     subtitle: '{{problem.name}}'
     run:
@@ -20,6 +21,7 @@ amg:
             - srun -n $tasks_per_node ./amg {{problem.flags}} -P "{{problem.pxval}}" "{{problem.pyval}}" "{{problem.pzval}}" -n "{{problem.nxval}}" "{{problem.nyval}}" "{{problem.nzval}}" &> {{problem.name}}.out
             - cd ..
             - mv test/{{problem.name}}.out {{problem.name}}.out
+            - cat {{problem.name}}.out
     build:
         modules: [gcc, openmpi/2.1.2]
         source_path: amg.tar.gz
