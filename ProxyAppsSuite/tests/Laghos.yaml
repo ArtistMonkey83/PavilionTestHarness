@@ -55,6 +55,10 @@ laghos:
                  regex: 'CG \(H1\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
                  action: store
                  files: '{{dim_runs.id}}.out'
+            cgL2_total_time:
+                 regex: 'CG \(L2\) total time: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
             cgL2_rate:
                  regex: 'CG \(L2\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
                  action: store
@@ -82,5 +86,5 @@ laghos:
             kernels_rate:
                  regex: 'Major kernels total rate \(megadofs x time steps \/ second\)\: (\S+)'
                  action: store
-                 files: 'dim_runs.id}}.out'
+                 files: '{{dim_runs.id}}.out'
 
