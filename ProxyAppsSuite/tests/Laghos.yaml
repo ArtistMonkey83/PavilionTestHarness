@@ -1,6 +1,7 @@
 laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
     variables:
+        dim_runs:
            - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
            - { id: test2, problem: '0', dim_flag: "-dim", dim_val: '3', rs: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
            - { id: test3, problem: '1', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-pa"}
