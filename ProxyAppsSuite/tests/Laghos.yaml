@@ -1,0 +1,45 @@
+ghos:
+    summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
+    variables:
+         dim_runs:
+           - { problem: '0', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.75', s: '',  assembly: "-pa"}
+           - { problem: '0', dim_flag: "-dim", dim_val: '3', rs: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
+           - { problem: '1', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-pa"}
+           - { problem: '1', dim_flag: "-dim", dim_val: '3', rs: '2', ok: '', ot: '', tf: '0.6', s: '', assembly: "-pa"}
+           - { problem: '2', dim_flag: "-dim", dim_val: '1', rs: '5', ok: '', ot: '', tf: '0.2', s: '', assembly: "-fa"}
+           - { problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rs: '2', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
+           - { problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rs: '1', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
+           - { problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rs: '3', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-pa"}
+    slurm:
+        num_nodes: 2
+    permute_on: dim_runs
+    run:
+        timeout: 2000
+        cmds:
+            - cd Laghos
+            - if [[dim_runs.problem == 4]]; then
+                 srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -ok "{{dim_runs.ok}}" -ot "{{dim_runs.ot}}" -tf "{{dim_runs.tf}}" -s "{{dim_runs.s}}" "{{dim_runs.assembly}}"
+              else
+                  srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}"
+              fi
+    build:
+        modules: [gcc, openmpi/2.1.2]
+        source_path: laghos
+        env:
+            CC: mpicc
+        cmds:
+            #HYPRE / METIS
+            - echo "beginning hypre and metis build"
+            - cd Laghos/
+            - make setup
+            - cd ../
+            #MFEM
+            - echo "beginning mfem build"
+            - cd mfem
+            - make parallel -j
+            - cd ../
+            #Laghos
+            - echo "beginning laghos build"
+            - cd Laghos
+            - make -j
+
