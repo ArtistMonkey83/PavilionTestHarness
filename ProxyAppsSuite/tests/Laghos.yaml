@@ -24,6 +24,7 @@ laghos:
             - fi
             - cd ..
             - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out 
+            - cat {{dim_runs.id}}.out
     build:
         modules: [gcc, openmpi/2.1.2]
         source_path: laghos
@@ -49,6 +50,10 @@ laghos:
             test_id:
                 const: "{{dim_runs.id}}"
         regex:
+           result:
+                regex: 'Major kernels total time.*'
+                action: 'store_true'
+                files: '{{dim_runs.id}}.out' 
             cgH1_total_time:
                 regex: 'CG \(H1\) total time: (\S+)'
                 action: store
