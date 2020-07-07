@@ -1,5 +1,6 @@
 laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
+    subtitle: "{{dim_runs.id}}_{{dim_runs.problem}}"
     variables:
         dim_runs:
            - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
@@ -14,6 +15,7 @@ laghos:
         num_nodes: 2
     permute_on: dim_runs
     run:
+        modules: [gcc, openmpi/2.1.2]
         timeout: 2000
         cmds:
             - cd Laghos
@@ -22,7 +24,7 @@ laghos:
             - else 
             -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out
             - fi
-            - cd ..
+            - cd ../
             - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out 
             - cat {{dim_runs.id}}.out
     build:
@@ -50,7 +52,7 @@ laghos:
             test_id:
                 const: "{{dim_runs.id}}"
         regex:
-           result:
+            result:
                 regex: 'Major kernels total time.*'
                 action: 'store_true'
                 files: '{{dim_runs.id}}.out' 
