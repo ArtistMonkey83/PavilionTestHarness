@@ -22,6 +22,8 @@ laghos:
             - else 
             -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out
             - fi
+            - cd ..
+            - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out 
     build:
         modules: [gcc, openmpi/2.1.2]
         source_path: laghos
@@ -48,43 +50,42 @@ laghos:
                 const: "{{dim_runs.id}}"
         regex:
             cgH1_total_time:
-                 regex: 'CG \(H1\) total time: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
+                regex: 'CG \(H1\) total time: (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
             cgH1_rate:
-                 regex: 'CG \(H1\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
+                regex: 'CG \(H1\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
             cgL2_total_time:
-                 regex: 'CG \(L2\) total time: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
+                regex: 'CG \(L2\) total time: (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
             cgL2_rate:
-                 regex: 'CG \(L2\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out' 
+                regex: 'CG \(L2\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
             forces_total_time:
-                 regex: 'Forces total time: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
+                regex: 'Forces total time: (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
             forces_rate:
-                 regex: 'Forces rate \(megadofs x timesteps \/ second\): (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
-            quad_data_total_time:
-                 regex: 'UpdateQuadData total time\: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
-            quad_data_rate:
-                 regex: 'UpdateQuadData rate \(megaquads x timesteps \/ second\)\: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}'
-            kernels_total_time: 
-                 regex: 'Major kernels total time \(seconds\)\: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
-            kernels_rate:
-                 regex: 'Major kernels total rate \(megadofs x time steps \/ second\)\: (\S+)'
-                 action: store
-                 files: '{{dim_runs.id}}.out'
-
+                regex: 'Forces rate \(megadofs x timesteps \/ second\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            update_quad_data_total_time:
+                regex: 'UpdateQuadData total time: (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            update_quad_data_rate:
+                regex: 'UpdateQuadData rate \(megaquads x timesteps \/ second\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            major_kernels_total_time:
+                regex: 'Major kernels total time \(seconds\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            major_kernels_rate:
+                regex: 'Major kernels total rate \(megadofs x time steps \/ second\): (\S+)'
+                action: store
+                files: '{{dim_runs.id}}.out'
