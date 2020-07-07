@@ -1,15 +1,14 @@
 laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
     variables:
-         dim_runs:
-           - { problem: '0', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.75', s: '',  assembly: "-pa"}
-           - { problem: '0', dim_flag: "-dim", dim_val: '3', rs: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
-           - { problem: '1', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-pa"}
-           - { problem: '1', dim_flag: "-dim", dim_val: '3', rs: '2', ok: '', ot: '', tf: '0.6', s: '', assembly: "-pa"}
-           - { problem: '2', dim_flag: "-dim", dim_val: '1', rs: '5', ok: '', ot: '', tf: '0.2', s: '', assembly: "-fa"}
-           - { problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rs: '2', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
-           - { problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rs: '1', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
-           - { problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rs: '3', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-pa"}
+           - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
+           - { id: test2, problem: '0', dim_flag: "-dim", dim_val: '3', rs: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-pa"}
+           - { id: test3, problem: '1', dim_flag: "-dim", dim_val: '2', rs: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-pa"}
+           - { id: test4, problem: '1', dim_flag: "-dim", dim_val: '3', rs: '2', ok: '', ot: '', tf: '0.6', s: '', assembly: "-pa"}
+           - { id: test5, problem: '2', dim_flag: "-dim", dim_val: '1', rs: '5', ok: '', ot: '', tf: '0.2', s: '', assembly: "-fa"}
+           - { id: test6, problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rs: '2', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
+           - { id: test7, problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rs: '1', ok: '', ot: '', tf: '3.0', s: '', assembly: "-pa"}
+           - { id: test8, problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rs: '3', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-pa"}
     slurm:
         num_nodes: 2
     permute_on: dim_runs
