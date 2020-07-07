@@ -1,4 +1,4 @@
-ghos:
+laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
     variables:
          dim_runs:
