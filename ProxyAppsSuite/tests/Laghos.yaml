@@ -1,4 +1,4 @@
-ghos:
+laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
     variables:
          dim_runs:
@@ -17,11 +17,11 @@ ghos:
         timeout: 2000
         cmds:
             - cd Laghos
-            - if [[dim_runs.problem == 4]]; then
-                 srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -ok "{{dim_runs.ok}}" -ot "{{dim_runs.ot}}" -tf "{{dim_runs.tf}}" -s "{{dim_runs.s}}" "{{dim_runs.assembly}}"
-              else
-                  srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}"
-              fi
+            - if [[ {{dim_runs.problem}} -eq 4 ]]; then
+            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -ok "{{dim_runs.ok}}" -ot "{{dim_runs.ot}}" -tf "{{dim_runs.tf}}" -s "{{dim_runs.s}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out 
+            - else 
+            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out
+            - fi
     build:
         modules: [gcc, openmpi/2.1.2]
         source_path: laghos
@@ -42,4 +42,45 @@ ghos:
             - echo "beginning laghos build"
             - cd Laghos
             - make -j
+    result_parse:
+        constant:
+            test_id:
+                const: "{{dim_runs.id}}"
+        regex:
+            cgH1_total_time:
+                 regex: 'CG \(H1\) total time: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            cgH1_rate:
+                 regex: 'CG \(H1\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            cgL2_rate:
+                 regex: 'CG \(L2\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out' 
+            forces_total_time:
+                 regex: 'Forces total time: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            forces_rate:
+                 regex: 'Forces rate \(megadofs x timesteps \/ second\): (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            quad_data_total_time:
+                 regex: 'UpdateQuadData total time\: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            quad_data_rate:
+                 regex: 'UpdateQuadData rate \(megaquads x timesteps \/ second\)\: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}'
+            kernels_total_time: 
+                 regex: 'Major kernels total time \(seconds\)\: (\S+)'
+                 action: store
+                 files: '{{dim_runs.id}}.out'
+            kernels_rate:
+                 regex: 'Major kernels total rate \(megadofs x time steps \/ second\)\: (\S+)'
+                 action: store
+                 files: 'dim_runs.id}}.out'
 
