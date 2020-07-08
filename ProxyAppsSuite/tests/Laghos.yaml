@@ -2,30 +2,30 @@ laghos:
     summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
     subtitle: "{{dim_runs.id}}_{{dim_runs.problem}}"
     variables:
-        dim_runs:
-           - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rp: '5', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
-           - { id: test2, problem: '0', dim_flag: "-dim", dim_val: '3', rp: '5', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
-           - { id: test3, problem: '1', dim_flag: "-dim", dim_val: '2', rp: '5', ok: '', ot: '', tf: '0.8', s: '', assembly: "-fa"}
-           - { id: test4, problem: '1', dim_flag: "-dim", dim_val: '3', rp: '5', ok: '', ot: '', tf: '0.6', s: '', assembly: "-fa"}
+         dim_runs:
+           - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rp: '3', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
+           - { id: test2, problem: '0', dim_flag: "-dim", dim_val: '3', rp: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
+           - { id: test3, problem: '1', dim_flag: "-dim", dim_val: '2', rp: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-fa"}
+           - { id: test4, problem: '1', dim_flag: "-dim", dim_val: '3', rp: '2', ok: '', ot: '', tf: '0.6', s: '', assembly: "-fa"}
            - { id: test5, problem: '2', dim_flag: "-dim", dim_val: '1', rp: '5', ok: '', ot: '', tf: '0.2', s: '', assembly: "-fa"}
-           - { id: test6, problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rp: '5', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
-           - { id: test7, problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rp: '5', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
-           - { id: test8, problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rp: '5', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-fa"}
+           - { id: test6, problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rp: '2', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
+           - { id: test7, problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rp: '1', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
+           - { id: test8, problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rp: '3', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-pa"}
     slurm:
         num_nodes: 2
     permute_on: dim_runs
     run:
-        modules: [gcc, openmpi/2.1.2]
         timeout: 2000
+        modules: [ gcc, openmpi/2.1.2 ]
         cmds:
             - cd Laghos
             - if [[ {{dim_runs.problem}} -eq 4 ]]; then
-            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -ok "{{dim_runs.ok}}" -ot "{{dim_runs.ot}}" -tf "{{dim_runs.tf}}" -s "{{dim_runs.s}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out 
+            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rp "{{dim_runs.rp}}" -ok "{{dim_runs.ok}}" -ot "{{dim_runs.ot}}" -tf "{{dim_runs.tf}}" -s "{{dim_runs.s}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out 
             - else 
-            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rs "{{dim_runs.rs}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out
+            -    srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}" -rp "{{dim_runs.rp}}" -tf "{{dim_runs.tf}}" "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out
             - fi
-            - cd ../
-            - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out 
+            - cd ..
+            - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out
             - cat {{dim_runs.id}}.out
     build:
         modules: [gcc, openmpi/2.1.2]
@@ -50,49 +50,201 @@ laghos:
     result_parse:
         constant:
             test_id:
-                const: "{{dim_runs.id}}"
+                const: '{{dim_runs.id}}'
         regex:
-            result:
-                regex: 'Major kernels total time.*'
+            results:
+               regex: 'Major kernels total time.*'
+               action: 'store_true'
+               files: '{{dim_runs.id}}.out'
+            dims:
+                regex: '\s+--dimension\s+(\d)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            mesh:
+                regex: '\s+--mesh\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            refine_serial:
+                regex: '\s+--refine-serial\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            refine_parallel:
+                regex: '\s+--refine-parallel\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            cartesian_partitioning:
+                regex: "\s+--cartesian-partitioning\s+\'(\S*)\'"
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            problem:
+                regex: '\s+--problem\s+(\d)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            order_kinematic:
+                regex: '\s+--order-kinematic\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            order_thermo:
+                regex: '\s+--order-thermo\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            order_intrule:
+                regex: '\s+--dimension\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            orde_solver:
+                regex: '\s+--ode-solver\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            t_final:
+                regex: '\s+--t-final\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            cfl:
+                regex: '\s+--cfl\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            cg_tol:
+                regex: '\s+--cg-tol\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            ftz_tol:
+                regex: '\s+--ftz-tol\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            cg_max_steps:
+                regex: '\s+--cg-max-steps\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            max_steps:
+                regex: '\s+--max-steps\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            assembly:
+                regex: '\s+--(\S+)-assembly\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            impose_viscosity:
+                regex: '\s+--no-impose-viscosity\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            visualization:
+                regex: '\s+--no-visualization\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            visualization_steps:
+                regex: '\s+--visualization-steps\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            visit:
+                regex: '\s+--no-visit\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            print:
+                regex: '\s+--no-print\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            outputfile:
+                regex: '\s+--outputfilename\s+(\S+)\s+'
                 action: 'store_true'
-                files: '{{dim_runs.id}}.out' 
-            cgH1_total_time:
-                regex: 'CG \(H1\) total time: (\S+)'
+                files: '{{dim_runs.id}}.out'
+            partition:
+                regex: '\s+--partition\s+(\d)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            device:
+                regex: '\s+--device\s+(\S+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            checks:
+                regex: '\s+--no-checks\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            mem:
+                regex: '\s+--no-mem\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            fom:
+                regex: '\s+--no-fom\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            gpu_aware:
+                regex: '\s+--no-gpu-aware-mpi\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            dev: 
+                regex: '\s+--dev\s+(\d)\s*'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            device_configuration:
+                regex: '\s*Device configuration:\s+(\S+)\s+'
                 action: store
+                files: '{{dim_runs.id}}.out'
+            memory_configuration:
+                regex: '\s*Memory configuration:\s+(\S+)\s+'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            num_zones_in_serial_mesh:
+                regex: '\s*Number of zones in the serial mesh:\s+(\S+)\s+'
+                action: store
+                files: '{{dim_runs.id}}.out'
+            non_cartesian_partitioning:
+                regex: '\s*Non-Cartesian\s+partitioning\s+through\s+(\S+)\s+will\s+be\s+used.\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            zones_min:
+                regex: '\s*Zones\s+min\/max:\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            zones_max:
+                regex: '\s*Zones\s+min\/max:\s+\d+\s+(\d+)\s+'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            kinematic_dofs:
+                regex: '\s*Number\s+of\s+kinematic\s+\(position,\s+velocity\)\s+dofs:\s+(\d+)\s*'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            energy_dofs:
+                regex: '\s*Number\s+of\s+specific\s+internal\s+energy\s+dofs:\s+(\d+)\s*'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'
+            cgH1_total_time:
+                regex: '\s*CG\s+\(H1\)\s+total\s+time:\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             cgH1_rate:
-                regex: 'CG \(H1\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
-                action: store
+                regex: '\s*CG\s+\(H1\)\s+rate\s+\(megadofs\s+x\s+cg_iterations\s+\/\s+second\):\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             cgL2_total_time:
-                regex: 'CG \(L2\) total time: (\S+)'
-                action: store
+                regex: '\s*CG\s+\(L2\)\s+total\s+time:\s+(\S+)\s*'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             cgL2_rate:
-                regex: 'CG \(L2\) rate \(megadofs x cg_iterations \/ second\): (\S+)'
-                action: store
+                regex: '\s*CG\s+\(L2\)\s+rate\s+\(megadofs\s+x\s+cg_iterations\s+\/\s+second\):\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             forces_total_time:
-                regex: 'Forces total time: (\S+)'
-                action: store
+                regex: '\s*Forces\s+total\s+time:\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             forces_rate:
-                regex: 'Forces rate \(megadofs x timesteps \/ second\): (\S+)'
-                action: store
+                regex: '\s*Forces rate\s+\(megadofs\s+x\s+timesteps\s+\/\s+second\):\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             update_quad_data_total_time:
-                regex: 'UpdateQuadData total time: (\S+)'
-                action: store
+                regex: '\s*UpdateQuadData\s+total\s+time:\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             update_quad_data_rate:
-                regex: 'UpdateQuadData rate \(megaquads x timesteps \/ second\): (\S+)'
-                action: store
+                regex: '\s*UpdateQuadData\s+rate\s+\(megaquads\s+x\s+timesteps\s+\/\s+second\):\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             major_kernels_total_time:
-                regex: 'Major kernels total time \(seconds\): (\S+)'
-                action: store
+                regex: '\s*Major\s+kernels\s+total\s+time\s+\(seconds\):\s+(\S+)\s+'
+                action: 'store'
                 files: '{{dim_runs.id}}.out'
             major_kernels_rate:
-                regex: 'Major kernels total rate \(megadofs x time steps \/ second\): (\S+)'
-                action: store
-                files: '{{dim_runs.id}}.out'
+                regex: '\s*Major\s+kernels\s+total\s+rate\s+\(megadofs\s+x\s+time\s+steps\s+\/\s+second\):\s+(\S+)\s*'
+                action: 'store'
+                files: '{{dim_runs.id}}.out'            
