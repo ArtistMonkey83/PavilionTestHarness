@@ -1,7 +1,50 @@
 _base:
     summary: Large scale modeling of high-performance interconnects
+    scheduler: slurm
+    slurm:
+        num_nodes: 2
+
+_build:
+    inherits_from: _base
     build:
-        modules: [gcc/7.4.0, friendly-testing, openmpi/2.1.2]
+        modules: [gcc, friendly-testing, openmpi/3.1.5]
+        source_path: ember
+        cmds:
+            #SHMEM Tests
+            - cd shmem/hotspotinc
+            - echo "making hotspotinc"
+            - make
+            - cd ../randominc
+            - echo "making randominc"
+            - make
+            - cd ../..
+            # UCX
+            - tar xvfz ucx-1.8.0.tar.gz
+            - cd ucx-1.8.0
+            - ./configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${PWD}/ember/ucx-1.8.0 --without-java
+            - make -j
+            - make install
+            - cd ..
+            # Openmpi
+            - tar xvf openmpi.tar
+            - cd openmpi/3.1.5
+            - cp ../../openmpi-3.1.5.tar.bz2 .
+            - bzip2 -d openmpi-3.1.5.tar.bz2
+            - tar xvf openmpi-3.1.5.tar
+            - module load gcc
+            - cd openmpi-3.1.5
+            - export LD_LIBRARY_PATH=${PWD}/../ucx-1.8.0/lib:${LD_LIB_PATH}
+            - export PATH=${PWD}/../ucx-1.8.0/bin:${PATH}
+            - ./configure CC=gcc CXX=g++ --with-platform=${PWD}/../platform/toss3-mlx-optimized.conf --prefix=${PWD}
+            - make -j
+            - make install
+            - export LD_LIBRARY_PATH=${PWD}/../openmpi-3.1.5/lib:$LD_LIBRARY_PATH
+            - export PATH=${PWD}/openmpi-3.1.5/bin:$PATH
+
+_no_build:
+    inherits_from: _base
+    build:
+        modules: [gcc, friendly-testing, openmpi/3.1.5]
         source_path: ember
         env:
             CC: mpicc
@@ -22,19 +65,9 @@ _base:
             - cd ../sweep3d
             - echo "making sweep3d"
             - make
-            #SHMEM Tests
-            - cd ../../shmem/hotspotinc
-            - echo "making hotspotinc"
-            - make
-            - cd ../randominc
-            - echo "making randominc"
-            - make
-    scheduler: slurm
-    slurm:
-        num_nodes: 1
 
 halo3d-26:
-    inherits_from: _base
+    inherits_from: _no_build
     summary: Unstructured nearest neighbor-like MPI benchmarker
     run:
         cmds:
@@ -42,7 +75,7 @@ halo3d-26:
             - srun -n 4 ./halo3d-26 -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000
 
 halo3d:
-    inherits_from:
+    inherits_from: _no_build
     summary: Structured nearest neighbor-like MPI benchmarker
     run:
         cmds:
@@ -50,22 +83,62 @@ halo3d:
             - srun -n 4 ./halo3d -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000
 
 incast:
-    inherits_from: _base
+    inherits_from: _no_build
     summary: Multiple inbound messages, I/O-like
     run:
         cmds:
             - srun -n 8 ./incast -iterations 100 -msgsize 2000
 
 pingpong:
-    inherits_from: _base
+    inherits_from: _no_build
     summary: hurrmm
     run:
         cmds:
             - cd mpi/pingpong
-            - srun -n 8 ./pingpong
+            - srun -n 8 ./pingpong &> pingpong.out
+            - cat pingpong.out
+            - cd ../..
+            - mv mpi/pingpong/pingpong.out pingpong.out
+    result_parse:
+        regex:
+            total_ranks:
+                regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
+                action: store
+                files: pingpong.out
+            message_size:
+                regex: '\#\s+\-\s+Message\s+Size\:\s+(\d+\s\S+)\s*'
+                action: store
+                files: pingpong.out
+            repeats:
+                regex: '\#\s+\-\s+Repeats\:\s+(\d+)\s*'
+                action: store
+                files: pingpong.out
+            time:
+                regex: '\ + \d+\ +(\S+)\ +\S+\ +\S+\ +\S+\ +\S+'
+                action: store
+                files: pingpong.out
+            kMsgs:
+                regex: '\ + \d+\ +\S+\ +(\S+)\ +\S+\ +\S+\ +\S+'
+                action: store
+                files: pingpong.out
+            mb:
+                regex: '\ + \d+\ +\S+\ +\S+\ +(\S+)\ +\S+\ +\S+'
+                action: store
+                files: pingpong.out
+            kMsg_per_S:
+                regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +(\S+)\ +\S+'
+                action: store
+                files: pingpong.out
+            mb_per_s:
+                regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +\S+\ +(\S+)'
+                action: store
+                files: pingpong.out
+
+
+
 
 sweep3d:
-    inherits_from: _base
+    inherits_from: _no_build
     summary: Communication sweeping
     run:
         cmds:
@@ -74,23 +147,24 @@ sweep3d:
             - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 100 -nx 100 -ny 100 -nz 150 -sleep 1000 -vars 2 -kba 15
 
 hotspotinc:
-    inherits_from: _base
+    inherits_from: _build
     summary: Hotspot random network access
     run:
-        modules: [gcc/7.4.0, friendly-testing, openmpi/2.1.2]
         cmds:
             - cd shmem/hotspotinc
             - ls
-            #-n must match number of nodes used
-            - shmemrun -n 1 ./hotspotinc
+            - shmemcc hotspotinc.c
+            - ls
+            - shmemrun -np 2 ./a.out
 
 randominc:
-    inherits_from: _base
+    inherits_from: _build
     summary: Uniform random network access
     run:
-        modules: [gcc/7.4.0, friendly-testing, openmpi/2.1.2]
+        # modules: [gcc/10.1.0, friendly-testing, openmpi/2.1.2]
         cmds:
             - cd shmem/randominc
-           #-n must match number of nodes used
-            - shmemrun -n 1 ./randominc
+           #-np must match number of nodes used
+            - shmemcc randominc.c
+            - shmemrun -np 2 ./a.out
 
