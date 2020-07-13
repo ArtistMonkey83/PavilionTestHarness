@@ -1,0 +1,43 @@
+examini:
+   summary: Research vehicle for particule codes in Molecular Dynamics which allows modular independent investigation of different aspects such as force calculation, communication, neighbor list construction and binning.
+   
+   run:
+     modules: [ gcc, cmake, openmpi ]
+     env:   
+        OMP_NUM_THREADS: '12'
+        OMP_DISPLAY_ENV: 'VERBOSE'
+        OMP_PLACES: 'THREADS'
+        OMP_PROC_BIND: 'SPREAD'
+     cmds:
+         - cd ExaMiniMD/src
+         - srun -n 2  ./ExaMiniMD  -il ../input/in.lj
+   
+   scheduler: slurm
+   slurm:
+      num_nodes: 1
+      tasks_per_node: 2
+
+   build:
+       modules: [ gcc, cmake, openmpi ]
+       source_path: ExaMini
+       env:
+          CC: mpicc
+       cmds:
+           # Building KOKKOS
+           # Assumes kokkos was cloned into a directory at the same level as ExaMiniMD
+           - echo "beginning kokkos build"
+           - tar xvfz kokkos.tgz
+           - cd kokkos
+           - git checkout 2.9.00
+           - mkdir ../kokkos-build
+           - cd ../kokkos-build
+           - cmake ../kokkos/ -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=${PWD}/../kokkos-2.9.00 -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_EXAMPLES=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_BUILD_TYPE=RELEASE
+           - make -j 
+           - make install 
+           - cd ../
+           # Building ExaMiniMD
+           # This implementation requires you to change first line in /ExaMiniMD/src/Makefile to "KOKKOS_PATH = ${PWD}/../../kokkos"
+           - cd ExaMiniMD/src/
+           - echo "beginning ExaMiniMD build"
+           # Intel Sandy-Bridge CPU/ OpenMP / MPI
+           - make -j KOKKOS_ARCH=SNB KOKKOS_DEVICES=OpenMP CXX=mpicxx
