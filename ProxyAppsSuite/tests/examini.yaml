@@ -1,22 +1,30 @@
 examini:
    summary: Research vehicle for particule codes in Molecular Dynamics which allows modular independent investigation of different aspects such as force calculation, communication, neighbor list construction and binning.
    
+   subtitle: "{{input.file}}"
+   variables:
+     input:
+        - { test_id: 'test_1', file: "in.lj", comm_type: "MPI", threads: '12', devices: '2' }    
+
+   permute_on: input
    run:
      modules: [ gcc, cmake, openmpi ]
-     env:   
-        OMP_NUM_THREADS: '12'
-        OMP_DISPLAY_ENV: 'VERBOSE'
+     env:
         OMP_PLACES: 'THREADS'
         OMP_PROC_BIND: 'SPREAD'
+ 
      cmds:
          - cd ExaMiniMD/src
-         - srun -n 2  ./ExaMiniMD  -il ../input/in.lj
-   
-   scheduler: slurm
+         - srun ./ExaMiniMD  -il ../input/{{input.file}} --comm-type "{{input.comm_type}}" --kokkos-threads={{input.threads}} --kokkos-nun-devices={{input.devices}}  &> {{input.test_id}}.out 
+         - cd ../../
+         - mv ExaMiniMD/src/{{input.test_id}}.out {{input.test_id}}.out
+         - cat {{input.test_id}}.out
+  
+   scheduler: slurm 
    slurm:
       num_nodes: 1
       tasks_per_node: 2
-
+   
    build:
        modules: [ gcc, cmake, openmpi ]
        source_path: ExaMini
@@ -36,7 +44,6 @@ examini:
            - make install 
            - cd ../
            # Building ExaMiniMD
-           # This implementation requires you to change first line in /ExaMiniMD/src/Makefile to "KOKKOS_PATH = ${PWD}/../../kokkos"
            - cd ExaMiniMD/src/
            - echo "beginning ExaMiniMD build"
            # Intel Sandy-Bridge CPU/ OpenMP / MPI
