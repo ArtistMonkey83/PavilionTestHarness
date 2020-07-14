@@ -1,10 +1,10 @@
 examini:
    summary: Research vehicle for particule codes in Molecular Dynamics which allows modular independent investigation of different aspects such as force calculation, communication, neighbor list construction and binning.
    
-   subtitle: "{{input.file}}"
+   subtitle: "{{input.test_id}}"
    variables:
      input:
-        - { test_id: 'test_1', file: "in.lj", comm_type: "MPI", threads: '12', devices: '2' }    
+        - { test_id: "test1", file: "in.lj", comm_type: "MPI", threads: '12', devices: '2' }    
 
    permute_on: input
    run:
@@ -15,7 +15,7 @@ examini:
  
      cmds:
          - cd ExaMiniMD/src
-         - srun ./ExaMiniMD  -il ../input/{{input.file}} --comm-type "{{input.comm_type}}" --kokkos-threads={{input.threads}} --kokkos-nun-devices={{input.devices}}  &> {{input.test_id}}.out 
+         - srun ./ExaMiniMD  -il ../input/{{input.file}} --comm-type "{{input.comm_type}}" --kokkos-threads={{input.threads}} --kokkos-num-devices={{input.devices}}  &> {{input.test_id}}.out 
          - cd ../../
          - mv ExaMiniMD/src/{{input.test_id}}.out {{input.test_id}}.out
          - cat {{input.test_id}}.out
@@ -48,3 +48,69 @@ examini:
            - echo "beginning ExaMiniMD build"
            # Intel Sandy-Bridge CPU/ OpenMP / MPI
            - make -j KOKKOS_ARCH=SNB KOKKOS_DEVICES=OpenMP CXX=mpicxx
+
+
+   result_parse:
+      constant:
+         file_name:
+            const: '{{input.file}}'
+         comm_type:
+            const: '{{input.comm_type}}'
+         threads:
+            const: '{{input.threads}}'
+         devices:
+            const: '{{input.devices}}'
+      regex:
+         results:
+            regex: "\#Procs\s+Particles\s+\|\s+Time\s+T_Force\s+T_Neigh\s+T_Comm\s+T_Other\s+\|\s+Steps\/s\s+Atomsteps\/s\s+Atomsteps\/\(proc\*s\)\s+"
+            action: 'store_true'
+            files: '{{input.test_id}}.out' 
+         
+         atom_1:
+            regex: '\s*Atoms\:\s+(\d+)\s+\d+\s+'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         atom_2:
+            regex: '\s*Atoms\:\s+\d+\s+(\d+)\s+'
+            action: 'store'
+            files: '{{input.test_id}}.out'    
+         proceses:
+            regex: '\s*(\d)\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         particles:
+            regex: '\s*\d\s+(\d+)\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         time_total:
+            regex: '\s*\d\s+\d+\s+\|\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         time_force:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         time_neighbor:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         time_communication:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         time_other:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         steps_per_s:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+(\S+)\s+\S+\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         atomsteps_per_s:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+(\S+)\s+\S+\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
+         atomsteps_per_procs:
+            regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+(\S+)\s+PERFORMANCE$'
+            action: 'store'
+            files: '{{input.test_id}}.out'
