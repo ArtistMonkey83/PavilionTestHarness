@@ -7,21 +7,15 @@ _base:
 _build:
     inherits_from: _base
     build:
-        modules: [gcc, friendly-testing, openmpi/3.1.5]
+        modules: [gcc]
         source_path: ember
         cmds:
             #SHMEM Tests
-            - cd shmem/hotspotinc
-            - echo "making hotspotinc"
-            - make
-            - cd ../randominc
-            - echo "making randominc"
-            - make
-            - cd ../..
             # UCX
+            - module load friendly-testing openmpi/3.1.5
             - tar xvfz ucx-1.8.0.tar.gz
             - cd ucx-1.8.0
-            - ./configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${PWD}/ember/ucx-1.8.0 --without-java
+            - ./configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${PWD} --without-java
             - make -j
             - make install
             - cd ..
@@ -31,15 +25,25 @@ _build:
             - cp ../../openmpi-3.1.5.tar.bz2 .
             - bzip2 -d openmpi-3.1.5.tar.bz2
             - tar xvf openmpi-3.1.5.tar
+            - module unload openmpi/3.1.5
             - module load gcc
             - cd openmpi-3.1.5
-            - export LD_LIBRARY_PATH=${PWD}/../ucx-1.8.0/lib:${LD_LIB_PATH}
-            - export PATH=${PWD}/../ucx-1.8.0/bin:${PATH}
-            - ./configure CC=gcc CXX=g++ --with-platform=${PWD}/../platform/toss3-mlx-optimized.conf --prefix=${PWD}
+            - export LD_LIBRARY_PATH=${PWD}/../../../ucx-1.8.0/lib:${LD_LIBRARY_PATH}
+            - export PATH=${PWD}/../../../ucx-1.8.0/bin:${PATH}
+            - ./configure CC=gcc CXX=g++ --with-platform=${PWD}/../platform/toss3-mlx-optimized.conf --prefix=${PWD} --with-ucx=${PWD}/../../../ucx-1.8.0
             - make -j
             - make install
-            - export LD_LIBRARY_PATH=${PWD}/../openmpi-3.1.5/lib:$LD_LIBRARY_PATH
-            - export PATH=${PWD}/openmpi-3.1.5/bin:$PATH
+            - export LD_LIBRARY_PATH=${PWD}/lib:${LD_LIBRARY_PATH}
+            - export PATH=${PWD}/bin:${PATH}
+            - cd ../../..
+            #Shmem
+            - cd shmem/hotspotinc
+            - echo "making hotspotinc"
+            - make
+            - cd ../randominc
+            - echo "making randominc"
+            - make
+
 
 _no_build:
     inherits_from: _base
@@ -72,7 +76,68 @@ halo3d-26:
     run:
         cmds:
             - cd mpi/halo3d-26
-            - srun -n 4 ./halo3d-26 -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000
+            - srun -n 4 ./halo3d-26 -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000 &> halo3d-26.out
+            - cat halo3d-26.out
+            - mv halo3d-26.out ../../halo3d-26.out
+    result_parse:
+        regex:
+            passed:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: 'store_true'
+                files: halo3d-26.out
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+                files: halo3d-26.out
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+                files: halo3d-26.out
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+                files: halo3d-26.out
+            results_from_rank:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: store
+                files: halo3d-26.out
+            pex:
+                regex: '\#\sProcessor\sGrid\:\s+(\d)'
+                action: store
+                files: halo3d-26.out
+            pey:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+                files: halo3d-26.out
+            pez:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+                files: halo3d-26.out
+            nx:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d)'
+                action: store
+                files: halo3d-26.out
+            ny:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+                files: halo3d-26.out
+            nz:
+                regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+                files: halo3d-26.out
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+                files: halo3d-26.out
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+                files: halo3d-26.out
+            sleep:
+                regex: '\#\sSleep\:\s+(\d)'
+                action: store
+                files: halo3d-26.out
+
 
 halo3d:
     inherits_from: _no_build
@@ -80,14 +145,109 @@ halo3d:
     run:
         cmds:
             - cd mpi/halo3d
-            - srun -n 4 ./halo3d -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000
+            - srun -n 4 ./halo3d -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000 &> halo3d.out
+            - cat halo3d.out
+            - mv halo3d.out ../../halo3d.out
+    result_parse:
+        regex:
+            passed:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: 'store_true'
+                files: halo3d.out
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+                files: halo3d.out
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+                files: halo3d.out
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+                files: halo3d.out
+            results_from_rank:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: store
+                files: halo3d.out
+            pex:
+                regex: '\#\sProcessor\sGrid\:\s+(\d)'
+                action: store
+                files: halo3d.out
+            pey:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+                files: halo3d.out
+            pez:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+                files: halo3d.out
+            nx:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d)'
+                action: store
+                files: halo3d.out
+            ny:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+                files: halo3d.out
+            nz:
+                regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+                files: halo3d.out
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+                files: halo3d.out
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+                files: halo3d.out
+            sleep:
+                regex: '\#\sSleep\:\s+(\d)'
+                action: store
+                files: halo3d.out
+
+
 
 incast:
     inherits_from: _no_build
     summary: Multiple inbound messages, I/O-like
     run:
         cmds:
-            - srun -n 8 ./incast -iterations 100 -msgsize 2000
+            - cd mpi/incast
+            - srun -n 8 ./incast -iterations 100 -msgsize 2000 &> incast.out
+            - cat incast.out
+            - mv incast.out ../../incast.out
+    result_parse:
+        regex:
+            passed:
+                regex: '\#\s+\-\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                action: 'store_true'
+                files: incast.out
+            incast_ranks:
+                regex: '\#\s+\-\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                action: store
+                files: incast.out
+            iterations:
+                regex: '\#\s+\-\s+Iterations\:\s+(\d+)\s*'
+                action: store
+                files: incast.out
+            message_size:
+                regex: '\#\s+\-\s+Message\s+Size\:\s+(\d+)\s*'
+                action: store
+                files: incast.out
+            time_taken:
+                regex: '\ + (\S+)\ +\S+\ +\S+'
+                action: store
+                files: incast.out
+            msgs_per_s:
+                regex: '\ + \S+\ +(\S+)\ +\S+'
+                action: store
+                files: incast.out
+            mb_per_second:
+                regex: '\ + \S+\ +\S+\ +(\S+)'
+                action: store
+                files: incast.out
 
 pingpong:
     inherits_from: _no_build
@@ -101,6 +261,10 @@ pingpong:
             - mv mpi/pingpong/pingpong.out pingpong.out
     result_parse:
         regex:
+            passed:
+                regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
+                action: 'store_true'
+                files: pingpong.out
             total_ranks:
                 regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
                 action: store
@@ -144,27 +308,77 @@ sweep3d:
         cmds:
             - cd mpi/sweep3d
             - ls
-            - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 100 -nx 100 -ny 100 -nz 150 -sleep 1000 -vars 2 -kba 15
+            - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 100 -nx 100 -ny 100 -nz 150 -sleep 1000 -vars 2 -kba 15 &> sweep3d.out
+            - cat sweep3d.out
+            - mv sweep3d.out ../../sweep3d.out
+    result_parse:
+        regex:
+            passed:
+                regex: '#\sPx\:\s+(\d+)*'
+                action: 'store_true'
+                files: sweep3d.out
+            px:
+                regex: '\#\sPx\:\s+(\d+)*'
+                action: store
+                files: sweep3d.out
+            py:
+                regex: '\#\sPy\:\s+(\d+)*'
+                action: store
+                files: sweep3d.out
+            nx:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+(\d+)'
+                action: store
+                files: sweep3d.out
+            ny:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+                files: sweep3d.out
+            nz:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+                files: sweep3d.out
+            kba:
+                regex: '\#\sKBA\:\s+(\d+)'
+                action: store
+                files: sweep3d.out
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+                files: sweep3d.out
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+                files: sweep3d.out
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+                files: sweep3d.out
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+                files: sweep3d.out
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+                files: sweep3d.out
+
 
 hotspotinc:
     inherits_from: _build
     summary: Hotspot random network access
     run:
         cmds:
+            - find . -name "shmemrun" -exec dirname '{}' \;
             - cd shmem/hotspotinc
-            - ls
-            - shmemcc hotspotinc.c
-            - ls
+            - objdump -x hotspotinc | more
             - shmemrun -np 2 ./a.out
 
 randominc:
     inherits_from: _build
     summary: Uniform random network access
     run:
-        # modules: [gcc/10.1.0, friendly-testing, openmpi/2.1.2]
         cmds:
             - cd shmem/randominc
            #-np must match number of nodes used
             - shmemcc randominc.c
-            - shmemrun -np 2 ./a.out
-
+            - shmemrun -np 4 ./a.out
