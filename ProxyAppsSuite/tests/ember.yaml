@@ -368,9 +368,11 @@ hotspotinc:
     summary: Hotspot random network access
     run:
         cmds:
-            - find . -name "shmemrun" -exec dirname '{}' \;
+            - export PATH=$(find . -name "shmemrun" -exec dirname '{}' \;):${PATH}
+            - which shmem | find . -name "shmemrun" -exec dirname '{}'\;
+            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname '{}' \;):${LD_LIBRARY_PATH}
+            - echo ""
             - cd shmem/hotspotinc
-            - objdump -x hotspotinc | more
             - shmemrun -np 2 ./a.out
 
 randominc:
@@ -382,3 +384,4 @@ randominc:
            #-np must match number of nodes used
             - shmemcc randominc.c
             - shmemrun -np 4 ./a.out
+
