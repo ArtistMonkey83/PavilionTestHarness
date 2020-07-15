@@ -8,7 +8,7 @@ examini:
 
    permute_on: input
    run:
-     modules: [ gcc, cmake, openmpi ]
+     modules: [ gcc, cmake, openmpi/2.1.2 ]
      env:
         OMP_PLACES: 'THREADS'
         OMP_PROC_BIND: 'SPREAD'
@@ -26,15 +26,15 @@ examini:
       tasks_per_node: 2
    
    build:
-       modules: [ gcc, cmake, openmpi ]
+       modules: [ gcc, cmake, openmpi/2.1.2 ]
        source_path: ExaMini
        env:
           CC: mpicc
        cmds:
            # Building KOKKOS
            # Assumes kokkos was cloned into a directory at the same level as ExaMiniMD
+           # git clone https://github.com/kokkos/kokkos ~/kokkos
            - echo "beginning kokkos build"
-           - tar xvfz kokkos.tgz
            - cd kokkos
            - git checkout 2.9.00
            - mkdir ../kokkos-build
@@ -43,11 +43,13 @@ examini:
            - make -j 
            - make install 
            - cd ../
-           # Building ExaMiniMD
-           - cd ExaMiniMD/src/
+           # Building ExaMiniMDi
+           # git clone https://github.com/ECP-copa/ExaMiniMD
+           # Change KOKKOS_PATH to "KOKKOS_PATH = ${PWD}/../../kokkos" in ExaMiniMD/src/Makefile/
+           - cd ExaMiniMD/src
            - echo "beginning ExaMiniMD build"
            # Intel Sandy-Bridge CPU/ OpenMP / MPI
-           - make -j KOKKOS_ARCH=SNB KOKKOS_DEVICES=OpenMP CXX=mpicxx
+           - make -j 
 
 
    result_parse:
