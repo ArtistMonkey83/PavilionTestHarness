@@ -8,41 +8,44 @@ _build:
     inherits_from: _base
     build:
         modules: [gcc]
-        source_path: ember
+        source_path: ember2
         cmds:
-            #SHMEM Tests
             # UCX
-            - module load friendly-testing openmpi/3.1.5
-            - tar xvfz ucx-1.8.0.tar.gz
-            - cd ucx-1.8.0
-            - ./configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${PWD} --without-java
-            - make -j
-            - make install
-            - cd ..
+            - 'module load friendly-testing openmpi/3.1.5'
+            - 'tar xvfz ucx-1.8.0.tar.gz &> ucx-build.log'
+            - 'cd ucx-1.8.0'
+            - 'UCX_PREFIX=${PWD}/../ucx_1.8.0'
+            - './configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${UCX_PREFIX} --without-java'
+            - 'make -j'
+            - 'make install'
+            - 'cd ..'
             # Openmpi
-            - tar xvf openmpi.tar
-            - cd openmpi/3.1.5
-            - cp ../../openmpi-3.1.5.tar.bz2 .
-            - bzip2 -d openmpi-3.1.5.tar.bz2
-            - tar xvf openmpi-3.1.5.tar
-            - module unload openmpi/3.1.5
-            - module load gcc
-            - cd openmpi-3.1.5
-            - export LD_LIBRARY_PATH=${PWD}/../../../ucx-1.8.0/lib:${LD_LIBRARY_PATH}
-            - export PATH=${PWD}/../../../ucx-1.8.0/bin:${PATH}
-            - ./configure CC=gcc CXX=g++ --with-platform=${PWD}/../platform/toss3-mlx-optimized.conf --prefix=${PWD} --with-ucx=${PWD}/../../../ucx-1.8.0
-            - make -j
-            - make install
-            - export LD_LIBRARY_PATH=${PWD}/lib:${LD_LIBRARY_PATH}
-            - export PATH=${PWD}/bin:${PATH}
-            - cd ../../..
-            #Shmem
-            - cd shmem/hotspotinc
-            - echo "making hotspotinc"
-            - make
-            - cd ../randominc
-            - echo "making randominc"
-            - make
+            #- cp ../../openmpi-3.1.5.tar.bz2 .  || (echo "$0 at $LINENO FAILED"; exit 1;)
+            - 'bzip2 -d openmpi-3.1.5.tar.bz2'
+            - 'tar xvf openmpi-3.1.5.tar '
+            - 'module unload openmpi/3.1.5 '
+            - 'module load gcc '
+            - 'cd openmpi-3.1.5 '
+            - 'export LD_LIBRARY_PATH=${UCX_PREFIX}/lib:${LD_LIBRARY_PATH}'
+            - 'export PATH=${UCX_PREFIX}/bin:${PATH}'
+            - 'OMPI_PREFIX=${PWD}/../openmpi_3.1.5'
+            - 'find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf" '
+            - 'OMPI_CONFIG=$(find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf")'
+            - './configure CC=gcc CXX=g++ --with-platform=${OMPI_CONFIG} --prefix=${OMPI_PREFIX} --with-ucx=${UCX_PREFIX}'
+            - 'make -j'
+            - 'make install'
+            - 'cd ../'
+            # Setup paths for new openmpi usage
+            - 'export PATH=${OMPI_PREFIX}/bin:${PATH}'
+            - 'export LD_LIBRARY_PATH=${OMPI_PREFIX}/lib:${LD_LIBRARY_PATH}'
+            # Build hotspotinc
+            - 'cd shmem/hotspotinc '
+            - 'echo "making hotspotinc"'
+            - 'make clean &>/dev/null; make ;'
+            # Build randominc
+            - 'cd ../randominc '
+            - 'echo "making randominc"'
+            - 'make clean &>/dev/null; make;'
 
 
 _no_build:
@@ -76,7 +79,7 @@ halo3d-26:
     run:
         cmds:
             - cd mpi/halo3d-26
-            - srun -n 4 ./halo3d-26 -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000 &> halo3d-26.out
+            - srun -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000 &> halo3d-26.out
             - cat halo3d-26.out
             - mv halo3d-26.out ../../halo3d-26.out
     result_parse:
@@ -98,11 +101,11 @@ halo3d-26:
                 action: store
                 files: halo3d-26.out
             results_from_rank:
-                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
                 action: store
                 files: halo3d-26.out
             pex:
-                regex: '\#\sProcessor\sGrid\:\s+(\d)'
+                regex: '\#\sProcessor\sGrid\:\s+(\d+)'
                 action: store
                 files: halo3d-26.out
             pey:
@@ -114,7 +117,7 @@ halo3d-26:
                 action: store
                 files: halo3d-26.out
             nx:
-                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d)'
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
                 action: store
                 files: halo3d-26.out
             ny:
@@ -134,7 +137,7 @@ halo3d-26:
                 action: store
                 files: halo3d-26.out
             sleep:
-                regex: '\#\sSleep\:\s+(\d)'
+                regex: '\#\sSleep\:\s+(\d+)'
                 action: store
                 files: halo3d-26.out
 
@@ -145,7 +148,7 @@ halo3d:
     run:
         cmds:
             - cd mpi/halo3d
-            - srun -n 4 ./halo3d -nx 20 -ny 20 -nz 20 -pex 2 -pey 2 -pez 1 -iterations 100 -vars 8 -sleep 2000 &> halo3d.out
+            - srun -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000 &> halo3d.out
             - cat halo3d.out
             - mv halo3d.out ../../halo3d.out
     result_parse:
@@ -167,11 +170,11 @@ halo3d:
                 action: store
                 files: halo3d.out
             results_from_rank:
-                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
                 action: store
                 files: halo3d.out
             pex:
-                regex: '\#\sProcessor\sGrid\:\s+(\d)'
+                regex: '\#\sProcessor\sGrid\:\s+(\d+)'
                 action: store
                 files: halo3d.out
             pey:
@@ -183,7 +186,7 @@ halo3d:
                 action: store
                 files: halo3d.out
             nx:
-                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d)'
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
                 action: store
                 files: halo3d.out
             ny:
@@ -203,7 +206,7 @@ halo3d:
                 action: store
                 files: halo3d.out
             sleep:
-                regex: '\#\sSleep\:\s+(\d)'
+                regex: '\#\sSleep\:\s+(\d+)'
                 action: store
                 files: halo3d.out
 
@@ -215,37 +218,37 @@ incast:
     run:
         cmds:
             - cd mpi/incast
-            - srun -n 8 ./incast -iterations 100 -msgsize 2000 &> incast.out
+            - srun -n 4 ./incast -iterations 500000 -msgsize 100000 &> incast.out
             - cat incast.out
             - mv incast.out ../../incast.out
     result_parse:
         regex:
             passed:
-                regex: '\#\s+\-\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
                 action: 'store_true'
                 files: incast.out
             incast_ranks:
-                regex: '\#\s+\-\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
                 action: store
                 files: incast.out
             iterations:
-                regex: '\#\s+\-\s+Iterations\:\s+(\d+)\s*'
+                regex: '\#\s+Iterations\:\s+(\d+)\s*'
                 action: store
                 files: incast.out
             message_size:
-                regex: '\#\s+\-\s+Message\s+Size\:\s+(\d+)\s*'
+                regex: '\#\s+Message\s+Size\:\s+(\d+)\s*'
                 action: store
                 files: incast.out
             time_taken:
-                regex: '\ + (\S+)\ +\S+\ +\S+'
+                regex: '\ + (\d+\S+)\ +\d+\S+\ +\d+\S+'
                 action: store
                 files: incast.out
             msgs_per_s:
-                regex: '\ + \S+\ +(\S+)\ +\S+'
+                regex: '\ + \d+\S+\ +(\d+\S+)\ +\d+\S+'
                 action: store
                 files: incast.out
             mb_per_second:
-                regex: '\ + \S+\ +\S+\ +(\S+)'
+                regex: '\ + \d+\S+\ +\d+\S+\ +(\d+\S+)'
                 action: store
                 files: incast.out
 
@@ -308,7 +311,7 @@ sweep3d:
         cmds:
             - cd mpi/sweep3d
             - ls
-            - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 100 -nx 100 -ny 100 -nz 150 -sleep 1000 -vars 2 -kba 15 &> sweep3d.out
+            - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25 &> sweep3d.out
             - cat sweep3d.out
             - mv sweep3d.out ../../sweep3d.out
     result_parse:
@@ -368,20 +371,100 @@ hotspotinc:
     summary: Hotspot random network access
     run:
         cmds:
-            - export PATH=$(find . -name "shmemrun" -exec dirname '{}' \;):${PATH}
-            - which shmem | find . -name "shmemrun" -exec dirname '{}'\;
-            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname '{}' \;):${LD_LIBRARY_PATH}
-            - echo ""
-            - cd shmem/hotspotinc
-            - shmemrun -np 2 ./a.out
+            - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
+            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
+            - 'cd shmem/hotspotinc || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
+            - 'shmemrun -np 2 ./hotspotinc &> hotspotinc.out || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
+            - cat hotspotinc.out
+            - mv hotspotinc.out ../../hotspotinc.out
+    result_parse:
+        regex:
+            passed:
+                regex: 'Hotspot Multiplier'
+                action: 'store_true'
+                files: hotspotinc.out
+            data_region_size_items:
+                regex: 'Data\sRegion\sSize\:\s+(\d+)'
+                action: store
+                files: hotspotinc.out
+            update_size_in_bytes_per_item:
+                regex: 'Update\sSize\:\s+(\d+)'
+                action: store
+                files: hotspotinc.out
+            updates:
+                regex: 'Updates\:\s+(\d+)'
+                action: store
+                files: hotspotinc.out
+            iterations:
+                regex: 'Iterations\:\s+(\d+)'
+                action: store
+                files: hotspotinc.out
+            hotspot_multiplier:
+                regex: 'Hotspot\sMultiplier\:\s+(\d+)'
+                action: store
+                files: hotspotinc.out
+            g_updates:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store
+                files: hotspotinc.out
+            time:
+                regex: 'Time\s+\=\s+(\S+)'
+                action: store
+                files: hotspotinc.out
+            g_update_per_second:
+                regex: 'GUP\/s\s+\=\s+(\S+)'
+                action: store
+                files: hotspotinc.out
+            pe:
+                regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
+                match_type: all
+                action: store
+                files: hotspotinc.out
+
+
 
 randominc:
     inherits_from: _build
     summary: Uniform random network access
     run:
         cmds:
-            - cd shmem/randominc
-           #-np must match number of nodes used
-            - shmemcc randominc.c
-            - shmemrun -np 4 ./a.out
+            - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
+            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
+            - 'cd shmem/randominc || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
+            - 'shmemrun -np 2 ./randominc &> randominc.out|| (echo "$0 at $LINENO FAILED"; exit 1 ;)'
+            - cat randominc.out
+            - mv randominc.out ../../randominc.out
+    result_parse:
+        regex:
+            size_per_pe_in_values:
+                regex: 'Size\sper\sPE\sis\:\s(\d+)\svalues'
+                action: store
+                files: randominc.out
+            size_of_value_in_bytes:
+                regex: 'Size\sper\sPE\sis\:\s\d+\svalues\s\(size\sof\svalue\s\=\s(\d)\sbytes\)'
+                action: store
+                files: randominc.out
+            iterations:
+                regex: 'Iterations\:\s(\d+)'
+                action: store
+                files: randominc.out
+            updates_per_pe:
+                regex: 'Performing\s(\d+)\supdates\sper\sPE\sacross\sthe\sdomain'
+            g_updates:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store
+                files: randominc.out
+            time:
+                regex: 'Time\s+\=\s+(\S+)'
+                action: store
+                files: randominc.out
+            g_update_per_second:
+                regex: 'GUP\/s\s+\=\s+(\S+)'
+                action: store
+                files: randominc.out
+            pe:
+                regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
+                match_type: all
+                action: store
+                files: randominc.out
 
