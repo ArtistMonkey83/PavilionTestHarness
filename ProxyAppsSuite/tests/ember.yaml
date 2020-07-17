@@ -1,5 +1,5 @@
 _base:
-    summary: Large scale modeling of high-performance interconnects
+    summary: MPI and Shmem performance tests
     scheduler: slurm
     slurm:
         num_nodes: 2
@@ -8,11 +8,11 @@ _build:
     inherits_from: _base
     build:
         modules: [gcc]
-        source_path: ember
+        source_path: ember2
         cmds:
             # UCX
             - 'module load friendly-testing openmpi/3.1.5'
-            - 'tar xvfz ucx-1.8.0.tar.gz &> ucx-build.log'
+            - 'tar xfz ucx-1.8.0.tar.gz'
             - 'cd ucx-1.8.0'
             - 'UCX_PREFIX=${PWD}/../ucx_1.8.0'
             - './configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${UCX_PREFIX} --without-java'
@@ -20,7 +20,6 @@ _build:
             - 'make install'
             - 'cd ..'
             # Openmpi
-            #- cp ../../openmpi-3.1.5.tar.bz2 .  || (echo "$0 at $LINENO FAILED"; exit 1;)
             - 'bzip2 -d openmpi-3.1.5.tar.bz2'
             - 'tar xvf openmpi-3.1.5.tar '
             - 'module unload openmpi/3.1.5 '
@@ -31,7 +30,7 @@ _build:
             - 'OMPI_PREFIX=${PWD}/../openmpi_3.1.5'
             - 'find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf" '
             - 'OMPI_CONFIG=$(find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf")'
-            - './configure CC=gcc CXX=g++ --with-platform=${OMPI_CONFIG} --prefix=${OMPI_PREFIX} --with-ucx=${UCX_PREFIX}'
+            - './configure CC=gcc CXX=g++ --with-platform=${OMPI_CONFIG} --prefix=${OMPI_PREFIX} --with-ucx=${UCX_PREFIX} --with-slurm --with-pmix'
             - 'make -j'
             - 'make install'
             - 'cd ../'
@@ -46,425 +45,328 @@ _build:
             - 'cd ../randominc '
             - 'echo "making randominc"'
             - 'make clean &>/dev/null; make;'
+            - 'cd ../../mpi/halo3d-26'
+            #Build halo3d-26
+            - 'echo "making halo3d-26"'
+            - 'make'
+            #Build halo3d
+            - 'cd ../halo3d'
+            - 'echo "making halo3d"'
+            - 'make'
+            #Build incast
+            - 'cd ../incast'
+            - 'echo "making incast"'
+            - 'make'
+            #Build pingpong
+            - 'cd ../pingpong'
+            - 'echo "making pingpong"'
+            - 'make'
+            #Build sweep3d
+            - 'cd ../sweep3d'
+            - 'echo "making sweep3d"'
+            - 'make'
 
-
-_no_build:
-    inherits_from: _base
-    build:
-        modules: [gcc, friendly-testing, openmpi/3.1.5]
-        source_path: ember
-        env:
-            CC: mpicc
-        cmds:
-            #MPI Tests
-            - cd mpi/halo3d-26
-            - echo "making halo3d-26"
-            - make
-            - cd ../halo3d
-            - echo "making halo3d"
-            - make
-            - cd ../incast
-            - echo "making incast"
-            - make
-            - cd ../pingpong
-            - echo "making pingpong"
-            - make
-            - cd ../sweep3d
-            - echo "making sweep3d"
-            - make
 
 halo3d-26:
-    inherits_from: _no_build
+    inherits_from: _build
     summary: Unstructured nearest neighbor-like MPI benchmarker
     run:
         cmds:
             - cd mpi/halo3d-26
-            - srun -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000 &> halo3d-26.out
-            - cat halo3d-26.out
-            - mv halo3d-26.out ../../halo3d-26.out
+            - srun --mpi=pmix -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000
     result_parse:
         regex:
             passed:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d)'
                 action: 'store_true'
-                files: halo3d-26.out
             time:
                 regex: '\s+ (\S+)\s+ \S+\s+ \S+'
                 action: store
-                files: halo3d-26.out
             kbytes_exchange_per_rank_max:
                 regex: '\s+ \S+\s+ (\S+)\s+ \S+'
                 action: store
-                files: halo3d-26.out
             mb_per_s_per_rank:
                 regex: '\s+ \S+\s+ \S+\s+ (\S+)'
                 action: store
-                files: halo3d-26.out
             results_from_rank:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             pex:
                 regex: '\#\sProcessor\sGrid\:\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             pey:
                 regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
                 action: store
-                files: halo3d-26.out
             pez:
                 regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             nx:
                 regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             ny:
                 regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
                 action: store
-                files: halo3d-26.out
             nz:
                 regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             iterations:
                 regex: '\#\sIterations\:\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             variables:
                 regex: '\#\sVariables\:\s+(\d+)'
                 action: store
-                files: halo3d-26.out
             sleep:
                 regex: '\#\sSleep\:\s+(\d+)'
                 action: store
-                files: halo3d-26.out
 
 
 halo3d:
-    inherits_from: _no_build
+    inherits_from: _build
     summary: Structured nearest neighbor-like MPI benchmarker
     run:
         cmds:
             - cd mpi/halo3d
-            - srun -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000 &> halo3d.out
-            - cat halo3d.out
-            - mv halo3d.out ../../halo3d.out
+            - srun --mpi=pmix -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000
     result_parse:
         regex:
             passed:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d)'
                 action: 'store_true'
-                files: halo3d.out
             time:
                 regex: '\s+ (\S+)\s+ \S+\s+ \S+'
                 action: store
-                files: halo3d.out
             kbytes_exchange_per_rank_max:
                 regex: '\s+ \S+\s+ (\S+)\s+ \S+'
                 action: store
-                files: halo3d.out
             mb_per_s_per_rank:
                 regex: '\s+ \S+\s+ \S+\s+ (\S+)'
                 action: store
-                files: halo3d.out
             results_from_rank:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
                 action: store
-                files: halo3d.out
             pex:
                 regex: '\#\sProcessor\sGrid\:\s+(\d+)'
                 action: store
-                files: halo3d.out
             pey:
                 regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
                 action: store
-                files: halo3d.out
             pez:
                 regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
                 action: store
-                files: halo3d.out
             nx:
                 regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
                 action: store
-                files: halo3d.out
             ny:
                 regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
                 action: store
-                files: halo3d.out
             nz:
                 regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
                 action: store
-                files: halo3d.out
             iterations:
                 regex: '\#\sIterations\:\s+(\d+)'
                 action: store
-                files: halo3d.out
             variables:
                 regex: '\#\sVariables\:\s+(\d+)'
                 action: store
-                files: halo3d.out
             sleep:
                 regex: '\#\sSleep\:\s+(\d+)'
                 action: store
-                files: halo3d.out
-
 
 
 incast:
-    inherits_from: _no_build
-    summary: Multiple inbound messages, I/O-like
+    inherits_from: _build
+    summary: Multiple inbound messages into a single node, causing backlog into network.
     run:
         cmds:
             - cd mpi/incast
-            - srun -n 4 ./incast -iterations 500000 -msgsize 100000 &> incast.out
-            - cat incast.out
-            - mv incast.out ../../incast.out
+            - srun --mpi=pmix -n 4 ./incast -iterations 500000 -msgsize 100000
     result_parse:
         regex:
             passed:
                 regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
                 action: 'store_true'
-                files: incast.out
             incast_ranks:
                 regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
                 action: store
-                files: incast.out
             iterations:
                 regex: '\#\s+Iterations\:\s+(\d+)\s*'
                 action: store
-                files: incast.out
             message_size:
                 regex: '\#\s+Message\s+Size\:\s+(\d+)\s*'
                 action: store
-                files: incast.out
             time_taken:
                 regex: '\ + (\d+\S+)\ +\d+\S+\ +\d+\S+'
                 action: store
-                files: incast.out
             msgs_per_s:
                 regex: '\ + \d+\S+\ +(\d+\S+)\ +\d+\S+'
                 action: store
-                files: incast.out
             mb_per_second:
                 regex: '\ + \d+\S+\ +\d+\S+\ +(\d+\S+)'
                 action: store
-                files: incast.out
 
 pingpong:
-    inherits_from: _no_build
-    summary: hurrmm
+    inherits_from: _build
+    summary: sends messages back and forth using mpi
     run:
         cmds:
             - cd mpi/pingpong
-            - srun -n 8 ./pingpong &> pingpong.out
-            - cat pingpong.out
-            - cd ../..
-            - mv mpi/pingpong/pingpong.out pingpong.out
+            - srun --mpi=pmix -n 8 ./pingpong
     result_parse:
         regex:
             passed:
                 regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
                 action: 'store_true'
-                files: pingpong.out
             total_ranks:
                 regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
                 action: store
-                files: pingpong.out
             message_size:
                 regex: '\#\s+\-\s+Message\s+Size\:\s+(\d+\s\S+)\s*'
                 action: store
-                files: pingpong.out
             repeats:
                 regex: '\#\s+\-\s+Repeats\:\s+(\d+)\s*'
                 action: store
-                files: pingpong.out
             time:
                 regex: '\ + \d+\ +(\S+)\ +\S+\ +\S+\ +\S+\ +\S+'
                 action: store
-                files: pingpong.out
             kMsgs:
                 regex: '\ + \d+\ +\S+\ +(\S+)\ +\S+\ +\S+\ +\S+'
                 action: store
-                files: pingpong.out
             mb:
                 regex: '\ + \d+\ +\S+\ +\S+\ +(\S+)\ +\S+\ +\S+'
                 action: store
-                files: pingpong.out
             kMsg_per_S:
                 regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +(\S+)\ +\S+'
                 action: store
-                files: pingpong.out
             mb_per_s:
                 regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +\S+\ +(\S+)'
                 action: store
-                files: pingpong.out
-
-
 
 
 sweep3d:
-    inherits_from: _no_build
-    summary: Communication sweeping
+    inherits_from: _build
+    summary: Communication sweepinp. 3D data domain is decomposed over 2D array of MPI ranks
     run:
         cmds:
             - cd mpi/sweep3d
-            - ls
-            - srun -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25 &> sweep3d.out
-            - cat sweep3d.out
-            - mv sweep3d.out ../../sweep3d.out
+            - srun --mpi=pmix -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25
     result_parse:
         regex:
             passed:
                 regex: '#\sPx\:\s+(\d+)*'
                 action: 'store_true'
-                files: sweep3d.out
             px:
                 regex: '\#\sPx\:\s+(\d+)*'
                 action: store
-                files: sweep3d.out
             py:
                 regex: '\#\sPy\:\s+(\d+)*'
                 action: store
-                files: sweep3d.out
             nx:
                 regex: '\#\sNx\sx\sNy\sx\sNz\:\s+(\d+)'
                 action: store
-                files: sweep3d.out
             ny:
                 regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
                 action: store
-                files: sweep3d.out
             nz:
                 regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
                 action: store
-                files: sweep3d.out
             kba:
                 regex: '\#\sKBA\:\s+(\d+)'
                 action: store
-                files: sweep3d.out
             variables:
                 regex: '\#\sVariables\:\s+(\d+)'
                 action: store
-                files: sweep3d.out
             iterations:
                 regex: '\#\sIterations\:\s+(\d+)'
                 action: store
-                files: sweep3d.out
             time:
                 regex: '\s+ (\S+)\s+ \S+\s+ \S+'
                 action: store
-                files: sweep3d.out
             kbytes_exchange_per_rank_max:
                 regex: '\s+ \S+\s+ (\S+)\s+ \S+'
                 action: store
-                files: sweep3d.out
             mb_per_s_per_rank:
                 regex: '\s+ \S+\s+ \S+\s+ (\S+)'
                 action: store
-                files: sweep3d.out
 
 
 hotspotinc:
     inherits_from: _build
-    summary: Hotspot random network access
+    summary: Hotspot random network access. Communication is weighted towards a hot spot node.
     run:
         cmds:
             - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
             - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
-            - 'cd shmem/hotspotinc || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
-            - 'shmemrun -np 2 ./hotspotinc &> hotspotinc.out || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
-            - cat hotspotinc.out
-            - mv hotspotinc.out ../../hotspotinc.out
+            - 'cd shmem/hotspotinc'
+            - 'shmemrun -np 2 ./hotspotinc'
     result_parse:
         regex:
             passed:
                 regex: 'Hotspot Multiplier'
                 action: 'store_true'
-                files: hotspotinc.out
             data_region_size_items:
                 regex: 'Data\sRegion\sSize\:\s+(\d+)'
                 action: store
-                files: hotspotinc.out
             update_size_in_bytes_per_item:
                 regex: 'Update\sSize\:\s+(\d+)'
                 action: store
-                files: hotspotinc.out
             updates:
                 regex: 'Updates\:\s+(\d+)'
                 action: store
-                files: hotspotinc.out
             iterations:
                 regex: 'Iterations\:\s+(\d+)'
                 action: store
-                files: hotspotinc.out
             hotspot_multiplier:
                 regex: 'Hotspot\sMultiplier\:\s+(\d+)'
                 action: store
-                files: hotspotinc.out
             g_updates:
                 regex: 'GUpdates\s+\=\s+(\S+)'
                 action: store
-                files: hotspotinc.out
             time:
                 regex: 'Time\s+\=\s+(\S+)'
                 action: store
-                files: hotspotinc.out
             g_update_per_second:
                 regex: 'GUP\/s\s+\=\s+(\S+)'
                 action: store
-                files: hotspotinc.out
             pe:
                 regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
                 match_type: all
                 action: store
-                files: hotspotinc.out
-
 
 
 randominc:
     inherits_from: _build
-    summary: Uniform random network access
+    summary: Unifrom random network access. Creates small, random messages across the system.
     run:
         cmds:
             - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
             - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
-            - 'cd shmem/randominc || (echo "$0 at $LINENO FAILED" ; exit 1 ;)'
-            - 'shmemrun -np 2 ./randominc &> randominc.out|| (echo "$0 at $LINENO FAILED"; exit 1 ;)'
-            - cat randominc.out
-            - mv randominc.out ../../randominc.out
+            - 'cd shmem/randominc'
+            - 'shmemrun -np 2 ./randominc'
     result_parse:
         regex:
             size_per_pe_in_values:
                 regex: 'Size\sper\sPE\sis\:\s(\d+)\svalues'
                 action: store
-                files: randominc.out
             size_of_value_in_bytes:
                 regex: 'Size\sper\sPE\sis\:\s\d+\svalues\s\(size\sof\svalue\s\=\s(\d)\sbytes\)'
                 action: store
-                files: randominc.out
             iterations:
                 regex: 'Iterations\:\s(\d+)'
                 action: store
-                files: randominc.out
             updates_per_pe:
                 regex: 'Performing\s(\d+)\supdates\sper\sPE\sacross\sthe\sdomain'
+                action: store
             g_updates:
                 regex: 'GUpdates\s+\=\s+(\S+)'
                 action: store
-                files: randominc.out
             time:
                 regex: 'Time\s+\=\s+(\S+)'
                 action: store
-                files: randominc.out
             g_update_per_second:
                 regex: 'GUP\/s\s+\=\s+(\S+)'
                 action: store
-                files: randominc.out
             pe:
                 regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
                 match_type: all
                 action: store
-                files: randominc.out
 
