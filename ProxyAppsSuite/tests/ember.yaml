@@ -8,7 +8,7 @@ _build:
     inherits_from: _base
     build:
         modules: [gcc]
-        source_path: ember2
+        source_path: ember
         cmds:
             # UCX
             - 'module load friendly-testing openmpi/3.1.5'
