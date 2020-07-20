@@ -1,0 +1,169 @@
+#%Module
+# vi: filetype=tcl expandtab shiftwidth=2 softtabstop=2
+
+source /usr/projects/hpcsoft/utilities/lib/envmodules_header
+
+# local variables
+set name         [moduleName]
+set version      [moduleVersion]
+if { [compare_version "2.0" $version] == 0 || [compare_version "2.0" $version] == -1 } {
+  set majorversion [moduleMajorVersion1Digit]
+} else {
+  set majorversion [moduleMajorVersion2Digit]
+}
+set machine      [machineName]
+set os           [systemOS]
+
+# module whatis
+module-whatis   "Open-MPI $version"
+
+conflict openmpi-intel openmpi-pgi openmpi-gcc openmpi cray-mpich cray-libsci
+
+# Check if we're unloading and that MPI_ROOT is set. If so, just use it.
+# Otherwise, try to figure it out by looking at compiler information.
+if { ([module-info mode remove] || [module-info mode switch1]) && [info exists ::env(MPI_ROOT)] } {
+  set prefix $::env(MPI_ROOT)
+} else {
+  if { [ string equal -length 4 $os "toss" ] } {
+    # Determine what compiler we're using. Look for hook env variables,
+    # otherwise get info from the system GNU compiler.
+    if { [info exists ::env(LCOMPILER) ] } {
+      set compiler    $::env(LCOMPILER)
+      set compilerver $::env(LCOMPILERVER)
+    } else {
+      set compiler    gcc
+      set compilerver [ exec gcc --version | grep GCC | awk {{print $3}} ]
+    }
+  } elseif { [ string equal -length 3 $os "cle" ] } {
+    # Determine the PrgEnv-* that is in use
+    set compiler None
+    if { [is-loaded PrgEnv-gnu] } {
+      set compiler gcc
+    } elseif { [is-loaded PrgEnv-intel] } {
+      set compiler intel
+    } else {
+      set msg "\nNo supported Programming Environment is loaded.\n"
+      set msg "${msg}Supported Programming Environments: PrgEnv-gnu, PrgEnv-intel\n"
+      module_break "$msg"
+    }
+
+    # Now figure out the compiler version
+    set compilerver None
+    if { [string equal $compiler "gcc"] && [info exists ::env(GCC_VERSION)] } {
+      set compilerver $::env(GCC_VERSION)
+    }
+    if { [string equal $compiler "intel"] && [info exists ::env(INTEL_VERSION)] } {
+      set compilerver $::env(INTEL_VERSION)
+    }
+    if { "$compilerver" == "None" } {
+      module_break "\nUnable to determine loaded compiler module."
+    }
+  } else {
+    module_break "\nUnable to determine OS for this machine"
+  }
+  set prefix /usr/projects/hpcsoft/${os}/${machine}/${name}/${version}-${compiler}-${compilerver}
+  # Check that prefix exists
+  if { ![file exists $prefix] } {
+    set msg "\n$name: Open MPI $version has not been built for $compiler version $compilerver.\n"
+    set msg "${msg}${name}: Please consider using a different $compiler version, such as that provided\n"
+    set msg "${msg}${name}: by the default $compiler compiler.\n"
+    set msg "${msg}${name} debug: $prefix: No such file or directory.\n"
+    module_break "$msg"
+    # See if we can find any builds for this version and let the user know
+    # about them.
+    #set base_mpi_dir [file dirname $prefix]
+    #set dirs [glob ${base_mpi_dir}/${version}-${compiler}-*]
+    #set sdirs [lsort $dirs]
+    #puts stderr "Open MPI version $version has been built against the following $compiler versions:"
+    #foreach dir $sdirs {
+    #    puts stderr [string range $dir [string length ${base_mpi_dir}/${version}-${compiler}-] [string length $dir]]
+    #}
+  }
+}
+
+set bindir    $prefix/bin
+set incdir    $prefix/include
+set libdir    $prefix/lib
+set mandir    $prefix/share/man
+
+# module help
+proc ModulesHelp {  } {
+  global version compiler prefix incdir
+  puts stderr "\tOpen-MPI $version"
+}
+
+setenv         LMPI             $name
+setenv         LMPIVER          $version
+setenv         LMPIMAJVER       $majorversion
+
+setenv         MPIHOME          $prefix
+setenv         MPI_NAME         $name
+setenv         MPI_VERSION      $version
+setenv         MPI_ROOT         $prefix
+
+prepend-path   PATH             $bindir
+
+prepend-path   LD_LIBRARY_PATH  $libdir
+prepend-path   CPATH            $incdir
+
+# Make sure we set things up so that mpicc, mpicxx, work
+# properly.
+if { [info exists ::env(CC) ] } {
+  setenv      OMPI_CC             $env(CC)
+  setenv      ORTE_CC             $env(CC)
+  setenv      OPAL_CC             $env(CC)
+}
+if { [info exists ::env(CXX) ] } {
+  setenv      OMPI_CXX            $env(CXX)
+  setenv      ORTE_CXX            $env(CXX)
+  setenv      OPAL_CXX            $env(CXX)
+}
+if { [info exists ::env(F77) ] } {
+  setenv      OMPI_F77            $env(F77)
+}
+if { [info exists ::env(FC) ] } {
+  setenv      OMPI_FC             $env(FC)
+}
+
+# Setting MANPATH is trickier - not every system sets it, nor
+# do a lot of users.  So we set it if it doesn't exist
+catch {set cur_manpath $env(MANPATH)}
+if { ![info exists cur_manpath] || ($cur_manpath == "") } {
+  # put a ':' after mandir in MANPATH so that the system defaults can still
+  # be found. See the man page for 'manpath'
+  setenv          MANPATH     $mandir:
+} else {
+  prepend-path    MANPATH     $mandir
+}
+
+# grab PBS if it is there
+if { [file exists /opt/PBS/lib64 ] } {
+  prepend-path    LD_LIBRARY_PATH /opt/PBS/lib64
+}
+
+if { [ string equal -length 3 $os "cle" ] } {
+  # Set up pkgconfig on Cray machines
+  append-path PKG_CONFIG_PATH           $prefix/lib/pkgconfig
+  append-path PE_PKGCONFIG_LIBS         ompi
+  append-path PE_C_PKGCONFIG_LIBS       ompi-c
+  append-path PE_CXX_PKGCONFIG_LIBS     ompi-cxx
+  append-path PE_FORTRAN_PKGCONFIG_LIBS ompi-fort:ompi-f77:ompi-f90
+  # We build Open MPI with --enable-static which causes issues as both orterun
+  # and orted link in cray-pmi. Fix this with the following:
+  setenv PMI_NO_PREINITIALIZE 1
+}
+
+# PSM2 with Open MPI 2.x needs some env variables set to get good performance
+if { [ string equal -length 5 $os "toss3" ] && $majorversion == 2 } {
+  setenv PSM2_MQ_RNDV_HFI_THRESH 8192
+}
+
+# Source the footer script
+source /usr/projects/hpcsoft/utilities/lib/envmodules_footer
+
+# Local Variables:      #
+# mode: tcl             #
+# indent-tabs-mode: nil #
+# tcl-indent-level: 2   #
+# End:                  #
+

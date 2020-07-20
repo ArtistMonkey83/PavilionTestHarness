@@ -1,0 +1,25 @@
+ompi_tarball=openmpi-3.1.5.tar.bz2
+ompi_tarball_md5sum=69eea0e1850aa2cfd7f934301478a01d
+ompi_src_dir=openmpi-3.1.5
+ompi_src_patches=( )
+ompi_configure_envs=""
+ompi_configure_options=""
+post_install_scripts=( "remove_newdtags.sh" "remove_usr-lib64.sh" )
+ompi_make_options="-j 4 V=1"
+
+# Figure out platform file based on hostname that is in machine variable
+case $machine in
+    'badger' | 'cyclone' | 'fire' | 'fog' | 'grizzly' | 'ice' | 'kit' | 'snow' )
+        platform_file=platform/toss3-hfi-optimized
+        ;;
+    'kodiak' | 'viewmaster3' )
+        platform_file=platform/toss3-mlx-optimized
+        ;;
+    'woodchuck' )
+        platform_file=platform/toss3-wc-optimized
+        ;;
+    'trinitite' | 'trinity' | 'gadget' )
+        platform_file=platform/cray-lustre-optimized
+        post_install_scripts+=( "fix_xpmem_alps_udreg_wlmdetect_ugni_paths.sh" )
+        ;;
+esac

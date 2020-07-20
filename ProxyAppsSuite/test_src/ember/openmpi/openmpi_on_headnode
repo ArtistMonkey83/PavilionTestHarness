@@ -1,0 +1,8 @@
+#%Module
+# vi:set filetype=tcl:
+
+setenv OMPI_MCA_pml                        ob1
+setenv OMPI_MCA_orte_allocation_required   0
+setenv OMPI_MCA_oob_tcp_if_include         eth0
+setenv OMPI_MCA_btl                        self,sm
+setenv OMPI_MCA_opal_paffinity_alone       0

@@ -1,0 +1,30 @@
+# (c) 2013-2016 Los Alamos National Security, LLC. All rights reserved.
+# Open MPI optimized configuration for TOSS3
+
+source ./common
+source ./common-optimized
+
+# Disable components not needed on TOSS platforms with high-speed networks
+enable_mca_no_build=carto,crs,filem,routed-linear,snapc,pml-dr,pml-crcp2,pml-crcpw,pml-v,pml-example,crcp,btl-tcp
+
+# TOSS3 uses slurm
+with_slurm=yes
+with_tm=no
+
+# Enable PMI support for direct launch
+with_pmi=yes
+
+# Enable lustre support in romio
+with_io_romio_flags=--with-file-system=ufs+nfs+lustre
+
+# Always build ibverbs support
+with_verbs=yes
+
+# Use psm2 support
+with_psm=yes
+with_psm2=yes
+
+# Disable Mellanox support
+with_mxm=no
+with_hcoll=no
+with_ucx=no
