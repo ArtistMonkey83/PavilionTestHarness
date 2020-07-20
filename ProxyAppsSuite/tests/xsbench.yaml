@@ -39,6 +39,8 @@ xsbench:
                 const: '{{iteration.sim_method}}'
             grid_type:
                 const: '{{iteration.search_type}}'
+            problem_size:
+                const: '{{iteration.size}}'
         regex:
             materials:
                 regex: 'Materials\:\s+(\d+)'
