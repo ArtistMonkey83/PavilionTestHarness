@@ -1,11 +1,40 @@
+
 examini:
    summary: Research vehicle for particule codes in Molecular Dynamics which allows modular independent investigation of different aspects such as force calculation, communication, neighbor list construction and binning.
-   
+  
+
+   build:
+       modules: [ gcc, cmake, openmpi/2.1.2 ]
+       source_path: ExaMini
+       env:
+          CC: mpicc
+       cmds:
+           # Building KOKKOS
+           - git clone https://github.com/kokkos/kokkos ~/kokkos
+           - echo "beginning kokkos build"
+           - cd kokkos
+           - git checkout 3.0.00
+           - mkdir ../kokkos-build
+           - cd ../kokkos-build
+           - cmake ../kokkos/ -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=${PWD}/../kokkos-3.0.00 -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_EXAMPLES=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_BUILD_TYPE=RELEASE
+           - make -j 
+           - make install 
+           - cd ../
+           # Building ExaMiniMDi
+           -  git clone https://github.com/ECP-copa/ExaMiniMD
+           - cd ExaMiniMD/src
+           - echo "beginning ExaMiniMD build"
+           - make -j KOKKOS_PATH=${PWD}/../../kokkos 
+
+   scheduler: slurm
+   slurm:
+      num_nodes: 1
+      tasks_per_node: 2
+ 
    subtitle: "{{input.test_id}}"
    variables:
      input:
         - { test_id: "test1", file: "in.lj", comm_type: "MPI", threads: '12', devices: '2' }    
-
    permute_on: input
    run:
      modules: [ gcc, cmake, openmpi/2.1.2 ]
@@ -20,38 +49,6 @@ examini:
          - mv ExaMiniMD/src/{{input.test_id}}.out {{input.test_id}}.out
          - cat {{input.test_id}}.out
   
-   scheduler: slurm 
-   slurm:
-      num_nodes: 1
-      tasks_per_node: 2
-   
-   build:
-       modules: [ gcc, cmake, openmpi/2.1.2 ]
-       source_path: ExaMini
-       env:
-          CC: mpicc
-       cmds:
-           # Building KOKKOS
-           # Assumes kokkos was cloned into a directory at the same level as ExaMiniMD
-           # git clone https://github.com/kokkos/kokkos ~/kokkos
-           - echo "beginning kokkos build"
-           - cd kokkos
-           - git checkout 2.9.00
-           - mkdir ../kokkos-build
-           - cd ../kokkos-build
-           - cmake ../kokkos/ -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=${PWD}/../kokkos-2.9.00 -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_EXAMPLES=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_BUILD_TYPE=RELEASE
-           - make -j 
-           - make install 
-           - cd ../
-           # Building ExaMiniMDi
-           # git clone https://github.com/ECP-copa/ExaMiniMD
-           # Change KOKKOS_PATH to "KOKKOS_PATH = ${PWD}/../../kokkos" in ExaMiniMD/src/Makefile/
-           - cd ExaMiniMD/src
-           - echo "beginning ExaMiniMD build"
-           # Intel Sandy-Bridge CPU/ OpenMP / MPI
-           - make -j 
-
-
    result_parse:
       constant:
          file_name:
