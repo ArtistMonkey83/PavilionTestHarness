@@ -10,7 +10,7 @@ examini:
           CC: mpicc
        cmds:
            # Building KOKKOS
-           - git clone https://github.com/kokkos/kokkos ~/kokkos
+           - git clone https://github.com/kokkos/kokkos
            - echo "beginning kokkos build"
            - cd kokkos
            - git checkout 3.0.00
@@ -24,7 +24,7 @@ examini:
            -  git clone https://github.com/ECP-copa/ExaMiniMD
            - cd ExaMiniMD/src
            - echo "beginning ExaMiniMD build"
-           - make -j KOKKOS_PATH=${PWD}/../../kokkos 
+           - make -j KOKKOS_PATH=../../kokkos 
 
    scheduler: slurm
    slurm:
