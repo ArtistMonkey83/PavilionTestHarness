@@ -67,49 +67,37 @@ examini:
          
          atom_1:
             regex: '\s*Atoms\:\s+(\d+)\s+\d+\s+'
-            action: 'store'
             files: '{{input.test_id}}.out'
          atom_2:
             regex: '\s*Atoms\:\s+\d+\s+(\d+)\s+'
-            action: 'store'
             files: '{{input.test_id}}.out'    
          proceses:
             regex: '\s*(\d)\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          particles:
             regex: '\s*\d\s+(\d+)\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          time_total:
             regex: '\s*\d\s+\d+\s+\|\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          time_force:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          time_neighbor:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          time_communication:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          time_other:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\|\s+\S+\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          steps_per_s:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+(\S+)\s+\S+\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          atomsteps_per_s:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+(\S+)\s+\S+\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
          atomsteps_per_procs:
             regex: '\s*\d\s+\d+\s+\|\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\|\s+\S+\s+\S+\s+(\S+)\s+PERFORMANCE$'
-            action: 'store'
             files: '{{input.test_id}}.out'
