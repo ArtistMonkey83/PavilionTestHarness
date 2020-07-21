@@ -1,0 +1,28 @@
+miniamr:
+   summary: Applies a stencil calculation on a unit cube computational domain 
+   
+   build:
+      modules: [ gcc, openmpi ]
+      source_path: miniAMR
+      env:
+         CC: mpicc
+      cmds:
+          - cd ref 
+          - make
+
+   scheduler: slurm
+   slurm:
+      num_nodes: 1
+      tasks_per_node: 2
+   
+#   subtitle: ""
+#   variables:
+   
+#   permute_on: 
+   run:
+      modules: [ gcc, openmpi ]
+      cmds:
+          - cd ref
+          - echo "successfully built"
+
+#   result_parse:
