@@ -1,5 +1,5 @@
 _base:
-    summary: XSasdfsadf
+    summary: Parallelism via OpenMP threading model. Uses unionized, nuclide, hash grid search types.
     scheduler: slurm
     slurm:
         num_nodes: 1
