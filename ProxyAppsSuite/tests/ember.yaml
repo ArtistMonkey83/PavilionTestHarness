@@ -8,7 +8,7 @@ _build:
     inherits_from: _base
     build:
         modules: [gcc]
-        source_path: ember
+        source_path: ember3
         cmds:
             # UCX
             - 'module load friendly-testing openmpi/3.1.5'
@@ -369,4 +369,5 @@ randominc:
                 regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
                 match_type: all
                 action: store
+
 
