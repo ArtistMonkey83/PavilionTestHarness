@@ -1,4 +1,4 @@
-_base::
+_base:
     summary: A benchmarking tool designed to maintain constant per-task I/o workload as task count is varied.
     variables:
         #problem: 
@@ -19,46 +19,50 @@ _base::
           num_nodes: 3
    
 _build:
-    inherits_from: _base
+    #not used in the build but run section inherits_from: _base
     build:
-        modules: [cmake, gcc, openmpi/2.1.2]
-        source_path: json-cwx
+        modules: [cmake, gcc, openmpi/2.1.2, hdf5-parallel]
+        source_path: macsio
         env:
             CC: mpicc
+            JSONCWX_PREFIX: $PWD/JSONCWX
+            SILO_PREFIX: $PWD/SILO
+            MACSIO_PREFIX: $PWD/MACSIO
         cmds:
             #Getting the files for json-cwx,hdf5 and silo
-            - wget https://github.com/json-c/json-c/archive/json-c-0.12-20140410.tar.gz
-            - wget https://www.hdfgroup.org/package/CMake-hdf5-1.12.0.tar.gz
-            - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+            #- git clone https://github.com/LLNL/json-cwx.git
+            #SILO requires a patch to work properly
+            #- wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
 
             #Getting Patched MACSio-1.1
-            - wget https://github.com/LLNL/MACSio/archive/v1.1.tar.gz
+            #- wget https://github.com/LLNL/MACSio/archive/v1.1.tar.gz
             
             #Extracting files
-            - tar xvf ./json-c-0.12-20140json-c-0.12-20140410.tar.gz
-            - tar xvf ./CMake-hdf5-1.12.0.tar.gz
-            - tar xvf ./silo-4.10.2.tar.gz
-            - tar xvf ./v1.1.tar.gz
+            - tar xfz ./json-cwx.tgz
 
             #Make Json-cwx
-            - cd ./json-c-json-c-0.12-20140410
+            - cd ./json-cwx/json-cwx
             - sh autogen.sh
-            - ./configure
-            - make
+            - ./configure --prefix=$JSONCWX_PREFIX
+            - make -j
+            - make install
+            - cd ../..
 
-            #Make hdf5
-            - cd ./hdf5-1.12.0
-            - sh autogen.sh
-            - ./configure
-            - make
-
-            #Make silo?
-            #Did I use autotools or just tar?
+            #Make silo
+            - tar xfz silo-4.10.2.tar.gz
+            - cd silo-4.10.2
+            - ./configure CFLAGS="-I$HDF5_ROOT/include $CFLAGS" LDFLAGS="-L$HDF5_ROOT/lib $LDFLAGS" CXX=mpicxx CC=mpicc FC=mpif90
+              --prefix=$SILO_PREFIX --with-hdf5=${HDF5_ROOT} --enable-shared --enable-install-lite-headers --enable-fortran
+            - make -j
+            - make install
+            - cd ../
+            
             
             #Build MACSio with Silo and HDF5 plugins
-            - mkdir build
-            - cd build
-            - cmake -DCMAKE_INSTALL_PREFIX=./ -DWITH_JSON-CWX_PREFIX= ../json-cwx -DWITH_SILO_PREFIX= ../silo-4.10.2 -DENABLE_HDF5_PLUGIN=ON -DWITH_HDF5_PREFIX= ../CMake-hdf5-1.12.0 ..
+            - tar xfz MACSio.tgz
+            - cd MACSio
+            - git checkout v1.1
+            - cmake -DCMAKE_INSTALL_PREFIX=$MACSIO_PREFIX -DWITH_JSON-CWX_PREFIX=$JSONCWX_PREFIX -DWITH_SILO_PREFIX=$SILO_PREFIX -DENABLE_HDF5_PLUGIN=ON -DWITH_HDF5_PREFIX=$HDF5_ROOT .
             - make
             - make install
 
@@ -67,24 +71,33 @@ macsio:
     inherits_from: _build
     summary: MACSio test with out plug-ins
     run:
+        modules: 
+            - gcc
+            - openmpi
+            - "hdf5-parallel/1.8.16"
         cmds:
-    result_parse:
-        regex:
-            #resultOrSomeName:
-                regex:
-                action:
+            - export LD_LIBRARY_PATH=$PWD/JSONCWX:$LD_LIBRARY_PATH
+            - export LD_LIBRARY_PATH=$PWD/SILO:$LD_LIBRARY_PATH
+            - srun -n4 $PWD/MACSIO/macsio --interface silo    
+            - srun -n4 $PWD/MACSIO/macsio --interface hdf5    
+            - srun -n4 $PWD/MACSIO/macsio --interface miftmpl    
+   # result_parse:
+  #      regex:
+  #          #resultOrSomeName:
+  #              regex:
+ #               action:
 
 #Test for running MACSio using Silo plugin
-macsioWsilo:
-    inherits_from: _build
-    summary: MACSio test with plug-in Silo enabled
-    run:
-        cmds:
-    result_parse:
-        regex:
+#macsioWsilo:
+   # inherits_from: _build
+   # summary: MACSio test with plug-in Silo enabled
+   # run:
+   #     cmds:
+   # result_parse:
+       # regex:
             #variableOrSomeName:
-                regex:
-                action:
+         #       regex:
+        #        action:
 
 #Test for running MACSio using Silo plugin with HDF5 enabled
 macsioWsiloHDF5:
@@ -105,8 +118,8 @@ macsioWsiloHDF5:
             #- srun -np {{numOfTasks}} ./macsio --interface hdf5 --parallel_file_mode {{mode}} {{numofHDF5}} --avg_num_parts {{ppTask}} --part_size {{ppSize}} --part_dim {{partDim}} --part_type {{partType}}
             #  
             #
-    result_parse:
-        regex:
+    #result_parse:
+     #   regex:
             #KeywordOrSomeName:
-                regex:
-                action: 
+      #          regex:
+       #         action: 
