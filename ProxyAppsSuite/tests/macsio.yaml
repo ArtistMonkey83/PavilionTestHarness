@@ -41,13 +41,26 @@ _build:
             - tar xvf ./v1.1.tar.gz
 
             #Make Json-cwx
-            #
+            - cd ./json-c-json-c-0.12-20140410
+            - sh autogen.sh
+            - ./configure
+            - make
 
             #Make hdf5
-            #
+            - cd ./hdf5-1.12.0
+            - sh autogen.sh
+            - ./configure
+            - make
 
-            #Make silo
-            #
+            #Make silo?
+            #Did I use autotools or just tar?
+            
+            #Build MACSio with Silo and HDF5 plugins
+            - mkdir build
+            - cd build
+            - cmake -DCMAKE_INSTALL_PREFIX=./ -DWITH_JSON-CWX_PREFIX= ../json-cwx -DWITH_SILO_PREFIX= ../silo-4.10.2 -DENABLE_HDF5_PLUGIN=ON -DWITH_HDF5_PREFIX= ../CMake-hdf5-1.12.0 ..
+            - make
+            - make install
 
 #Test for running MACSio with out plugins
 macsio:
@@ -80,16 +93,16 @@ macsioWsiloHDF5:
     run:
         cmds:
             - echo "Running 93 tasks to 8 HDF5 files in Multiple Independent File Mode."
-            - mpirun -np 93 ./macsio --interface hdf5 --parallel_file_mode MIF 8
+            - srun -np 93 ./macsio --interface hdf5 --parallel_file_mode MIF 8
 
             - echo "Running 93 tasks to 1 HDF5 file in Single Shared File Mode."
-            - mpirun - np 93 ./macsio --interface hdf5 --parallel_file_mode SIF 1
+            - srun - np 93 ./macsio --interface hdf5 --parallel_file_mode SIF 1
 
             #- echo "Running {{numOfTasksVariable}} tasks to {{numOfHDF5fileVariable}} HDF5 files in {{modeVariable}}."
-            #- mpirun -np {{numOfTasksVariable}} ./macsio --interface hdf5 --parallel_file_mode {{modeVariable}} {{numOfHDF5fileVariable}}
+            #- srun -np {{numOfTasksVariable}} ./macsio --interface hdf5 --parallel_file_mode {{modeVariable}} {{numOfHDF5fileVariable}}
             #
             #- echo "Running {{numOfTasks}} tasks to {{numOfHDF5}} HDF5 files in {{mode}},on a {{partDim}} dimensional, {{partType}} mesh with {{ppTask}} average parts per task and a nominal I/O request of{{ppSize}} bytes"
-            #- mpirun -np {{numOfTasks}} ./macsio --interface hdf5 --parallel_file_mode {{mode}} {{numofHDF5}} --avg_num_parts {{ppTask}} --part_size {{ppSize}} --part_dim {{partDim}} --part_type {{partType}}
+            #- srun -np {{numOfTasks}} ./macsio --interface hdf5 --parallel_file_mode {{mode}} {{numofHDF5}} --avg_num_parts {{ppTask}} --part_size {{ppSize}} --part_dim {{partDim}} --part_type {{partType}}
             #  
             #
     result_parse:
