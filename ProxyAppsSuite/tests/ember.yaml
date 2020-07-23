@@ -72,11 +72,11 @@ halo3d-26:
     summary: Unstructured nearest neighbor-like MPI benchmarker
     run:
         cmds:
-            - cd mpi/halo3d-26
-            - srun --mpi=pmix -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000
+            - 'cd mpi/halo3d-26'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d)'
                 action: 'store_true'
             time:
@@ -125,11 +125,11 @@ halo3d:
     summary: Structured nearest neighbor-like MPI benchmarker
     run:
         cmds:
-            - cd mpi/halo3d
-            - srun --mpi=pmix -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000
+            - 'cd mpi/halo3d'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: '\#\sResults\sfrom\srank\:\s+(\d)'
                 action: 'store_true'
             time:
@@ -178,11 +178,11 @@ incast:
     summary: Multiple inbound messages into a single node, causing backlog into network.
     run:
         cmds:
-            - cd mpi/incast
-            - srun --mpi=pmix -n 4 ./incast -iterations 500000 -msgsize 100000
+            - 'cd mpi/incast'
+            - '{{sched.test_cmd}} --mpi=pmix -n 4 ./incast -iterations 500000 -msgsize 100000'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
                 action: 'store_true'
             incast_ranks:
@@ -209,11 +209,11 @@ pingpong:
     summary: sends messages back and forth using mpi
     run:
         cmds:
-            - cd mpi/pingpong
-            - srun --mpi=pmix -n 8 ./pingpong
+            - 'cd mpi/pingpong'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./pingpong'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
                 action: 'store_true'
             total_ranks:
@@ -244,14 +244,14 @@ pingpong:
 
 sweep3d:
     inherits_from: _build
-    summary: Communication sweepinp. 3D data domain is decomposed over 2D array of MPI ranks
+    summary: Communication sweeping. 3D data domain is decomposed over 2D array of MPI ranks
     run:
         cmds:
-            - cd mpi/sweep3d
-            - srun --mpi=pmix -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25
+            - 'cd mpi/sweep3d'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: '#\sPx\:\s+(\d+)*'
                 action: 'store_true'
             px:
@@ -300,7 +300,7 @@ hotspotinc:
             - 'shmemrun -np 2 ./hotspotinc'
     result_parse:
         regex:
-            passed:
+            result:
                 regex: 'Hotspot Multiplier'
                 action: 'store_true'
             data_region_size_items:
@@ -344,6 +344,9 @@ randominc:
             - 'shmemrun -np 2 ./randominc'
     result_parse:
         regex:
+            result:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store_true
             size_per_pe_in_values:
                 regex: 'Size\sper\sPE\sis\:\s(\d+)\svalues'
                 action: store
@@ -369,5 +372,4 @@ randominc:
                 regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
                 match_type: all
                 action: store
-
 
