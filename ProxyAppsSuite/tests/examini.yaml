@@ -35,7 +35,6 @@ examini:
    variables:
      input:
         - { test_id: "test1", file: "in.lj", comm_type: "MPI", threads: '12', devices: '2' }    
-   permute_on: input
    run:
      modules: [ gcc, cmake, openmpi/2.1.2 ]
      env:
