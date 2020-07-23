@@ -1,15 +1,14 @@
-
 examini:
    summary: Research vehicle for particule codes in Molecular Dynamics which allows modular independent investigation of different aspects such as force calculation, communication, neighbor list construction and binning.
   
-
    build:
        modules: [ gcc, cmake, openmpi/2.1.2 ]
-       source_path: ExaMini
        env:
           CC: mpicc
        cmds:
            # Building KOKKOS
+           - mkdir ExaMiniMD_testsrc
+           - cd ExaMiniMD_testsrc
            - git clone https://github.com/kokkos/kokkos
            - echo "beginning kokkos build"
            - cd kokkos
@@ -21,7 +20,7 @@ examini:
            - make install 
            - cd ../
            # Building ExaMiniMDi
-           -  git clone https://github.com/ECP-copa/ExaMiniMD
+           - git clone https://github.com/ECP-copa/ExaMiniMD
            - cd ExaMiniMD/src
            - echo "beginning ExaMiniMD build"
            - make -j KOKKOS_PATH=../../kokkos 
@@ -59,9 +58,8 @@ examini:
          devices:
             const: '{{input.devices}}'
       regex:
-         results:
+         result:
             regex: "\#Procs\s+Particles\s+\|\s+Time\s+T_Force\s+T_Neigh\s+T_Comm\s+T_Other\s+\|\s+Steps\/s\s+Atomsteps\/s\s+Atomsteps\/\(proc\*s\)\s+"
-            action: 'store_true'
             files: '{{input.test_id}}.out' 
          
          atom_1:
