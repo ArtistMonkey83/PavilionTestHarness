@@ -15,26 +15,28 @@ laghos:
 
     build:
         modules: [gcc, openmpi/2.1.2]
-        source_path: laghos
+#        source_path: laghos
         env:
             CC: mpicc
         cmds:
-            #Gitting the files: Laghos, HYPRE-2.11.0, METIS-4.0.3, MFEM
-            - git clone https://github.com/CEED/Laghos
-            - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz
-            - wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
-            - git clone https://github.com/mfem/mfem
-            #HYPRE / METIS
+            # Gitting the files: Laghos, HYPRE-2.11.0, METIS-4.0.3, MFEM
+#            - mkdir laghos_testsrc
+#            - cd laghos_testsrc
+#            - git clone https://github.com/CEED/Laghos
+#            - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz
+#            - wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
+#            - git clone https://github.com/mfem/mfem
+            # HYPRE / METIS
             - echo "beginning hypre and metis build"
             - cd Laghos/
             - make setup || exit 1
             - cd ../
-            #MFEM
+            # MFEM
             - echo "beginning mfem build"
             - cd mfem
             - make parallel -j || exit 1
             - cd ../
-            #Laghos
+            # Laghos
             - echo "beginning laghos build"
             - cd Laghos
             - make -j || exit 1
@@ -225,4 +227,4 @@ laghos:
                 files: '{{dim_runs.id}}.out'
             major_kernels_rate:
                 regex: 'Major\s+kernels\s+total\s+rate\s+\(megadofs\s+x\s+time\s+steps\s+\/\s+second\):\s+(\S+)\s*'
-                files: '{{dim_runs.id}}.out'       
+                files: '{{dim_runs.id}}.out'  
