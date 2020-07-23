@@ -23,7 +23,7 @@ examini:
            - git clone https://github.com/ECP-copa/ExaMiniMD
            - cd ExaMiniMD/src
            - echo "beginning ExaMiniMD build"
-           - make -j KOKKOS_PATH=../../kokkos 
+           - make -j KOKKOS_PATH=../../kokkos || exit 1 
 
    scheduler: slurm
    slurm:
