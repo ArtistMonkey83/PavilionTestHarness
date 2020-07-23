@@ -12,17 +12,63 @@ miniamr:
 
    scheduler: slurm
    slurm:
-      num_nodes: 1
-      tasks_per_node: 2
+     num_nodes: 1  
+ 
+   subtitle: "{{test_runs.id}}"
+   variables:
+      test_runs:
+          - { id: "test_4", nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '4', npy: '2', npz: '2', max_blocks: '4000', num_refine: '4', num_tsteps: '100', stages_per_ts: '16', checksum_freq: '4', num_objects: '2', obj1_type: '2', obj1_bounce: '0', obj1_center_x: '-1.10', obj1_center_y: '-1.10', obj1_center_z: '-1.10', obj1_move_1: '0.030', obj1_move_2: '0.030', obj1_move_3: '0.030', obj1_size_x: '1.5', obj1_size_y: '1.5', obj1_size_z: '1.5', obj1_inc_x: '0.0', obj1_inc_y: '0.0', obj1_inc_z: '0.0', obj2_type: '2', obj2_bounce: '0', obj2_center_x: '0.5', obj2_center_y: '0.5', obj2_center_z: '1.76', obj2_move_1: '0.0', obj2_move_2: '0.0', obj2_move_3: '-0.025', obj2_size_x: '0.75', obj2_size_y: '0.75', obj2_size_z: '0.75', obj2_inc_x: '0.0', obj2_inc_y: '0.0', obj2_inc_z: '0.0' }
    
-#   subtitle: ""
-#   variables:
-   
-#   permute_on: 
+   permute_on: test_runs
    run:
       modules: [ gcc, openmpi ]
       cmds:
           - cd ref
-          - echo "successfully built"
+          - processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
+          - 'srun -n $processes miniAMR.x
+               --num_refine 4 
+               --max_blocks "{{test_runs.max_blocks}}" 
+               --init_x "{{test_runs.init_x}}" 
+               --init_y "{{test_runs.init_y}}"
+               --init_z "{{test_runs.init_z}}" 
+               --npx "{{test_runs.npx}}"
+               --npy "{{test_runs.npy}}"
+               --npz "{{test_runs.npz}}"
+               --nx "{{test_runs.nx}}"
+               --ny "{{test_runs.ny}}"
+               --nz "{{test_runs.nz}}" 
+               --num_objects "{{test_runs.num_objects}}"
+               --object
+                  "{{test_runs.obj1_type}}" 
+                  "{{test_runs.obj1_bounce}}" 
+                  "{{test_runs.obj1_center_x}}" 
+                  "{{test_runs.obj1_center_y}}" 
+                  "{{test_runs.obj1_center_z}}" 
+                  "{{test_runs.obj1_move_1}}" 
+                  "{{test_runs.obj1_move_2}}" 
+                  "{{test_runs.obj1_move_3}}" 
+                  "{{test_runs.obj1_size_x}}" 
+                  "{{test_runs.obj1_size_y}}" 
+                  "{{test_runs.obj1_size_z}}" 
+                  "{{test_runs.obj1_inc_x}}" 
+                  "{{test_runs.obj1_inc_y}}"
+                  "{{test_runs.obj1_inc_z}}" 
+               --object 
+                  "{{test_runs.obj2_type}}"
+                  "{{test_runs.obj2_bounce}}"
+                  "{{test_runs.obj2_center_x}}"
+                  "{{test_runs.obj2_center_y}}"
+                  "{{test_runs.obj2_center_z}}"
+                  "{{test_runs.obj2_move_1}}"
+                  "{{test_runs.obj2_move_2}}"
+                  "{{test_runs.obj2_move_3}}"
+                  "{{test_runs.obj2_size_x}}"
+                  "{{test_runs.obj2_size_y}}"
+                  "{{test_runs.obj2_size_z}}"
+                  "{{test_runs.obj2_inc_x}}"
+                  "{{test_runs.obj2_inc_y}}"
+                  "{{test_runs.obj2_inc_z}}"
+               --num_tsteps "{{test_runs.num_tsteps}}" 
+               --checksum_freq "{{test_runs.checksum_freq}}" 
+               --stages_per_ts "{{test_runs.stages_per_ts}}" '
 
-#   result_parse:
