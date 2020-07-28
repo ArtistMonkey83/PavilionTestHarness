@@ -1,0 +1,375 @@
+_base:
+    summary: MPI and Shmem performance tests
+    scheduler: slurm
+    slurm:
+        num_nodes: 2
+
+_build:
+    inherits_from: _base
+    build:
+        modules: [gcc]
+        source_path: ember
+        cmds:
+            # UCX
+            - 'module load friendly-testing openmpi/3.1.5'
+            - 'tar xfz ucx-1.8.0.tar.gz'
+            - 'cd ucx-1.8.0'
+            - 'UCX_PREFIX=${PWD}/../ucx_1.8.0'
+            - './configure CC=gcc CXX=g++ MPICC=mpicc --prefix=${UCX_PREFIX} --without-java'
+            - 'make -j'
+            - 'make install'
+            - 'cd ..'
+            # Openmpi
+            - 'bzip2 -d openmpi-3.1.5.tar.bz2'
+            - 'tar xvf openmpi-3.1.5.tar '
+            - 'module unload openmpi/3.1.5 '
+            - 'module load gcc '
+            - 'cd openmpi-3.1.5 '
+            - 'export LD_LIBRARY_PATH=${UCX_PREFIX}/lib:${LD_LIBRARY_PATH}'
+            - 'export PATH=${UCX_PREFIX}/bin:${PATH}'
+            - 'OMPI_PREFIX=${PWD}/../openmpi_3.1.5'
+            - 'find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf" '
+            - 'OMPI_CONFIG=$(find ../openmpi/3.1.5/platform -name "toss3-mlx-optimized.conf")'
+            - './configure CC=gcc CXX=g++ --with-platform=${OMPI_CONFIG} --prefix=${OMPI_PREFIX} --with-ucx=${UCX_PREFIX} --with-slurm --with-pmix'
+            - 'make -j'
+            - 'make install'
+            - 'cd ../'
+            # Setup paths for new openmpi usage
+            - 'export PATH=${OMPI_PREFIX}/bin:${PATH}'
+            - 'export LD_LIBRARY_PATH=${OMPI_PREFIX}/lib:${LD_LIBRARY_PATH}'
+            # Build hotspotinc
+            - 'cd shmem/hotspotinc '
+            - 'echo "making hotspotinc"'
+            - 'make clean &>/dev/null; make ;'
+            # Build randominc
+            - 'cd ../randominc '
+            - 'echo "making randominc"'
+            - 'make clean &>/dev/null; make;'
+            - 'cd ../../mpi/halo3d-26'
+            #Build halo3d-26
+            - 'echo "making halo3d-26"'
+            - 'make'
+            #Build halo3d
+            - 'cd ../halo3d'
+            - 'echo "making halo3d"'
+            - 'make'
+            #Build incast
+            - 'cd ../incast'
+            - 'echo "making incast"'
+            - 'make'
+            #Build pingpong
+            - 'cd ../pingpong'
+            - 'echo "making pingpong"'
+            - 'make'
+            #Build sweep3d
+            - 'cd ../sweep3d'
+            - 'echo "making sweep3d"'
+            - 'make'
+
+
+halo3d-26:
+    inherits_from: _build
+    summary: Unstructured nearest neighbor-like MPI benchmarker
+    run:
+        cmds:
+            - 'cd mpi/halo3d-26'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./halo3d-26 -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000'
+    result_parse:
+        regex:
+            result:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: 'store_true'
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+            results_from_rank:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
+                action: store
+            pex:
+                regex: '\#\sProcessor\sGrid\:\s+(\d+)'
+                action: store
+            pey:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+            pez:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+            nx:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
+                action: store
+            ny:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+            nz:
+                regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+            sleep:
+                regex: '\#\sSleep\:\s+(\d+)'
+                action: store
+
+
+halo3d:
+    inherits_from: _build
+    summary: Structured nearest neighbor-like MPI benchmarker
+    run:
+        cmds:
+            - 'cd mpi/halo3d'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./halo3d -nx 700 -ny 700 -nz 700 -pex 4 -pey 2 -pez 1 -iterations 1000 -vars 20 -sleep 2000'
+    result_parse:
+        regex:
+            result:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d)'
+                action: 'store_true'
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+            results_from_rank:
+                regex: '\#\sResults\sfrom\srank\:\s+(\d+)'
+                action: store
+            pex:
+                regex: '\#\sProcessor\sGrid\:\s+(\d+)'
+                action: store
+            pey:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+            pez:
+                regex: '\#\sProcessor\sGrid\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+            nx:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+(\d+)'
+                action: store
+            ny:
+                regex: '#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+            nz:
+                regex: '\#\sData\sGrid\s\(per\srank\):\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+            sleep:
+                regex: '\#\sSleep\:\s+(\d+)'
+                action: store
+
+
+incast:
+    inherits_from: _build
+    summary: Multiple inbound messages into a single node, causing backlog into network.
+    run:
+        cmds:
+            - 'cd mpi/incast'
+            - '{{sched.test_cmd}} --mpi=pmix -n 4 ./incast -iterations 500000 -msgsize 100000'
+    result_parse:
+        regex:
+            result:
+                regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                action: 'store_true'
+            incast_ranks:
+                regex: '\#\s+Incast\s+Ranks\:\s+(\d+)\s*'
+                action: store
+            iterations:
+                regex: '\#\s+Iterations\:\s+(\d+)\s*'
+                action: store
+            message_size:
+                regex: '\#\s+Message\s+Size\:\s+(\d+)\s*'
+                action: store
+            time_taken:
+                regex: '\ + (\d+\S+)\ +\d+\S+\ +\d+\S+'
+                action: store
+            msgs_per_s:
+                regex: '\ + \d+\S+\ +(\d+\S+)\ +\d+\S+'
+                action: store
+            mb_per_second:
+                regex: '\ + \d+\S+\ +\d+\S+\ +(\d+\S+)'
+                action: store
+
+pingpong:
+    inherits_from: _build
+    summary: sends messages back and forth using mpi
+    run:
+        cmds:
+            - 'cd mpi/pingpong'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./pingpong'
+    result_parse:
+        regex:
+            result:
+                regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
+                action: 'store_true'
+            total_ranks:
+                regex: '\#\s+\-\s+Total\s+Ranks\:\s+(\d+)\s*'
+                action: store
+            message_size:
+                regex: '\#\s+\-\s+Message\s+Size\:\s+(\d+\s\S+)\s*'
+                action: store
+            repeats:
+                regex: '\#\s+\-\s+Repeats\:\s+(\d+)\s*'
+                action: store
+            time:
+                regex: '\ + \d+\ +(\S+)\ +\S+\ +\S+\ +\S+\ +\S+'
+                action: store
+            kMsgs:
+                regex: '\ + \d+\ +\S+\ +(\S+)\ +\S+\ +\S+\ +\S+'
+                action: store
+            mb:
+                regex: '\ + \d+\ +\S+\ +\S+\ +(\S+)\ +\S+\ +\S+'
+                action: store
+            kMsg_per_S:
+                regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +(\S+)\ +\S+'
+                action: store
+            mb_per_s:
+                regex: '\ + \d+\ +\S+\ +\S+\ +\S+\ +\S+\ +(\S+)'
+                action: store
+
+
+sweep3d:
+    inherits_from: _build
+    summary: Communication sweeping. 3D data domain is decomposed over 2D array of MPI ranks
+    run:
+        cmds:
+            - 'cd mpi/sweep3d'
+            - '{{sched.test_cmd}} --mpi=pmix -n 8 ./sweep3d -pex 4 -pey 2 -iterations 1000 -nx 300 -ny 300 -nz 350 -sleep 1000 -vars 20 -kba 25'
+    result_parse:
+        regex:
+            result:
+                regex: '#\sPx\:\s+(\d+)*'
+                action: 'store_true'
+            px:
+                regex: '\#\sPx\:\s+(\d+)*'
+                action: store
+            py:
+                regex: '\#\sPy\:\s+(\d+)*'
+                action: store
+            nx:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+(\d+)'
+                action: store
+            ny:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+(\d+)\sx\s+\d+'
+                action: store
+            nz:
+                regex: '\#\sNx\sx\sNy\sx\sNz\:\s+\d+\sx\s+\d+\sx\s+(\d+)'
+                action: store
+            kba:
+                regex: '\#\sKBA\:\s+(\d+)'
+                action: store
+            variables:
+                regex: '\#\sVariables\:\s+(\d+)'
+                action: store
+            iterations:
+                regex: '\#\sIterations\:\s+(\d+)'
+                action: store
+            time:
+                regex: '\s+ (\S+)\s+ \S+\s+ \S+'
+                action: store
+            kbytes_exchange_per_rank_max:
+                regex: '\s+ \S+\s+ (\S+)\s+ \S+'
+                action: store
+            mb_per_s_per_rank:
+                regex: '\s+ \S+\s+ \S+\s+ (\S+)'
+                action: store
+
+
+hotspotinc:
+    inherits_from: _build
+    summary: Hotspot random network access. Communication is weighted towards a hot spot node.
+    run:
+        cmds:
+            - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
+            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
+            - 'cd shmem/hotspotinc'
+            - 'shmemrun -np 2 ./hotspotinc'
+    result_parse:
+        regex:
+            result:
+                regex: 'Hotspot Multiplier'
+                action: 'store_true'
+            data_region_size_items:
+                regex: 'Data\sRegion\sSize\:\s+(\d+)'
+                action: store
+            update_size_in_bytes_per_item:
+                regex: 'Update\sSize\:\s+(\d+)'
+                action: store
+            updates:
+                regex: 'Updates\:\s+(\d+)'
+                action: store
+            iterations:
+                regex: 'Iterations\:\s+(\d+)'
+                action: store
+            hotspot_multiplier:
+                regex: 'Hotspot\sMultiplier\:\s+(\d+)'
+                action: store
+            g_updates:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store
+            time:
+                regex: 'Time\s+\=\s+(\S+)'
+                action: store
+            g_update_per_second:
+                regex: 'GUP\/s\s+\=\s+(\S+)'
+                action: store
+            pe:
+                regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
+                match_type: all
+                action: store
+
+
+randominc:
+    inherits_from: _build
+    summary: Unifrom random network access. Creates small, random messages across the system.
+    run:
+        cmds:
+            - export PATH=$(find . -name "shmemrun" -exec dirname $(readlink -f '{}') \;):${PATH}
+            - export LD_LIBRARY_PATH=$(find . -name "liboshmem.so" -exec dirname $(readlink -f '{}') \;):${LD_LIBRARY_PATH}
+            - 'cd shmem/randominc'
+            - 'shmemrun -np 2 ./randominc'
+    result_parse:
+        regex:
+            result:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store_true
+            size_per_pe_in_values:
+                regex: 'Size\sper\sPE\sis\:\s(\d+)\svalues'
+                action: store
+            size_of_value_in_bytes:
+                regex: 'Size\sper\sPE\sis\:\s\d+\svalues\s\(size\sof\svalue\s\=\s(\d)\sbytes\)'
+                action: store
+            iterations:
+                regex: 'Iterations\:\s(\d+)'
+                action: store
+            updates_per_pe:
+                regex: 'Performing\s(\d+)\supdates\sper\sPE\sacross\sthe\sdomain'
+                action: store
+            g_updates:
+                regex: 'GUpdates\s+\=\s+(\S+)'
+                action: store
+            time:
+                regex: 'Time\s+\=\s+(\S+)'
+                action: store
+            g_update_per_second:
+                regex: 'GUP\/s\s+\=\s+(\S+)'
+                action: store
+            pe:
+                regex: 'PE\:\s+\d+\s+total\sis\:\s(\d+)'
+                match_type: all
+                action: store
+
