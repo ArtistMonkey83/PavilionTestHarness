@@ -1,6 +1,5 @@
-miniamr:
-   summary: Applies a stencil calculation on a unit cube computational domain 
-   
+_base:
+   summary: building the miniAMR test
    build:
       modules: [ gcc, openmpi ]
       source_path: miniAMR
@@ -8,100 +7,219 @@ miniamr:
          CC: mpicc
       cmds:
           - cd ref 
-          - make
-
+          - make || exit 1
    scheduler: slurm
-   slurm:
-        num_nodes: 1 
- 
    subtitle: "{{test_runs.id}}"
-   variables:
-      test_runs:
-#          - { id: "test_0", nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '3', npy: '3', npz: '3', max_blocks: '9000', num_refine: '4', num_tsteps: '100', stages_per_ts: '20', checksum_freq: '1', num_objects: '1', obj1_type: '2', obj1_bounce: '0', obj1_center_x: '-1.71', obj1_center_y: '-1.71', obj1_center_z: '-1.71', obj1_move_1: '0.04', obj1_move_2: '0.04', obj1_move_3: '0.04', obj1_size_x: '1.7', obj1_size_y: '1.7', obj1_size_z: '1.7', obj1_inc_x: '0.0', obj1_inc_y: '0.0', obj1_inc_z: '0.0', obj2_type: '', obj2_bounce: '', obj2_center_x: '', obj2_center_y: '', obj2_center_z: '', obj2_move_1: '', obj2_move_2: '', obj2_move_3: '', obj2_size_x: '', obj2_size_y: '', obj2_size_z: '', obj2_inc_x: '', obj2_inc_y: '', obj2_inc_z: '' }
-          - { id: "test_2", nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '4', npy: '2', npz: '2', max_blocks: '4000', num_refine: '4', num_tsteps: '100', stages_per_ts: '16', checksum_freq: '4', num_objects: '2', obj1_type: '2', obj1_bounce: '0', obj1_center_x: '-1.10', obj1_center_y: '-1.10', obj1_center_z: '-1.10', obj1_move_1: '0.030', obj1_move_2: '0.030', obj1_move_3: '0.030', obj1_size_x: '1.5', obj1_size_y: '1.5', obj1_size_z: '1.5', obj1_inc_x: '0.0', obj1_inc_y: '0.0', obj1_inc_z: '0.0', obj2_type: '2', obj2_bounce: '0', obj2_center_x: '0.5', obj2_center_y: '0.5', obj2_center_z: '1.76', obj2_move_1: '0.0', obj2_move_2: '0.0', obj2_move_3: '-0.025', obj2_size_x: '0.75', obj2_size_y: '0.75', obj2_size_z: '0.75', obj2_inc_x: '0.0', obj2_inc_y: '0.0', obj2_inc_z: '0.0' }
-   
-   permute_on: test_runs
    run:
-      timeout: 1200
-      modules: [ gcc, openmpi ]
+       timeout: 1200
+       modules: [ gcc, openmpi ]
+   result_parse:
+       regex:
+           result:
+               regex: '================\s+Start\s+report\s+==================='
+               files: '{{test_runs.id}}.out'
+           algorithm:
+               regex: 'Initial\s+ranks\s+arranged\s+by\s+(\S+)\s+across\s+machine\s*'
+               files: '{{test_runs.id}}.out'
+           num_variables:
+               regex: 'Calculate\s+on\s+(\d+)\s+variables\s+with\s+\d+\s+point\s+stencil\s*'
+               files: '{{test_runs.id}}.out'
+           point_stencil:
+               regex: 'Calculate\s+on\s+\d+\s+variables\s+with\s+(\d+)\s+point\s+stencil\s*'
+               files: '{{test_runs.id}}.out'
+           variable_error_tolerance:
+               regex: 'Error\s+tolorance\s+for\s+variable\s+sums\s+is\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           test_time_ave:
+               regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           test_time_std:
+               regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           test_time_min:
+               regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           test_time_max:
+               regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           num_malloc_calls_ave:
+               regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           num_malloc_calls_std:
+               regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           num_malloc_calls_min:
+               regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           num_malloc_calls_max:
+               regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_ave:
+               regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_std:
+               regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_min:
+               regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_max:
+               regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_init_ave:
+               regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_init_std:
+               regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_init_min:
+               regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_init_max:
+               regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_init_ave:
+               regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_init_std:
+               regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_init_min:
+               regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_init_max:
+               regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_timestepping_ave:
+               regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_timestepping_std:
+               regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_timestepping_min:
+               regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           malloc_timestepping_max:
+               regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_timestepping_avg:
+               regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_timestepping_std:
+               regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_timestepping_min:
+               regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           amount_malloced_timestepping_max:
+               regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           
+           # Computational Performace Times
+#           comp_time_ave:
+#           comp_time_std:
+#           comp_time_min:
+#           comp_time_max:
+
+           totalGFLOPS:
+               regex: 'total\s+GFLOPS\:\s+(\S+)F'
+               files: '{{test_runs.id}}.out'
+           averageGFLOPS:
+               regex: 'Average\s+GFLOPS\s+per\s+rank\:\s+(\S+)'
+               files: '{{test_runs.id}}.out'
+           total_pt_ops:
+               regex: 'Total\s+floating\s+point\s+ops\:\s+(\S+)'
+               files: '{{test_runs.id}}.out'
+            
+#           interblock_comm_time:
+#           interblock_comm_std:
+#           interblock_comm_min:
+#           interblock_comm_max:
+           
+           
+           
+           final_ranks:
+               regex: 'Summary\:\s+ranks\s+(\d+)\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           time_steps:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+(\d+)\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           total_time:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+(\S+)\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           calc:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+(\S+)\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           max_comm:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+(\S+)\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           min_red:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+(\S+)\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           total_refine:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+(\S+)\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           blocks_per_ts:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+(\S+)\s+max_blocks\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           final_max_blocks:
+               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out' 
+   
+
+objects_1:
+   summary: 'runs the miniAMR test when num_nodes = 1'
+   inherits_from: _base
+   slurm:
+     num_nodes: 7
+   variables:
+         test_runs:
+          - { id: 'test_1', nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '3', npy: '3', npz: '3', max_blocks: '9000', num_refine: '4', num_tsteps: '100', stages_per_ts: '20', checksum_freq: '1', num_objects: '1', obj0_type: '2', obj0_bounce: '0', obj0_center_x: '-1.71', obj0_center_y: '-1.71', obj0_center_z: '-1.71', obj0_move_1: '0.04', obj0_move_2: '0.04', obj0_move_3: '0.04', obj0_size_x: '1.7', obj0_size_y: '1.7', obj0_size_z: '1.7', obj0_inc_x: '0.0', obj0_inc_y: '0.0', obj0_inc_z: '0.0' }
+
+   run:
       cmds:
-          - cd ref
-          - processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
-          - lbrace='{'
-          - rbrace='}'
-          - quotes='"'
-          - objectString=''
-          - for i in {1..{{test_runs.num_objects}}}
-          - do
-          - objectString="$objectString
-                          --object
-                          $quotes$lbrace$lbrace test_runs.obj${i}_type $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_bounce $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_center_x $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_center_z $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_move_1 $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_move_2 $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_move_3 $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_size_x $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_size_y $rbrace$rbrace$quotes     
-                          $quotes$lbrace$lbrace test_runs.obj${i}_size_z $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_inc_x $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_inc_y $rbrace$rbrace$quotes
-                          $quotes$lbrace$lbrace test_runs.obj${i}_incz $rbrace$rbrace$quotes"
-          - done
-          - echo $objectString 
-          
-          - 'srun -n $processes miniAMR.x 
-             --nx "{{test_runs.nx}}"
-             --ny "{{test_runs.ny}}"
-             --nz "{{test_runs.nz}}"
-             --init_x "{{test_runs.init_x}}"
-             --init_y "{{test_runs.init_y}}"
-             --init_z "{{test_runs.init_z}}"
-             --npx "{{test_runs.npx}}"
-             --npy "{{test_runs.npy}}"
-             --npz "{{test_runs.npz}}"
-             --max_blocks "{{test_runs.max_blocks}}"
-             --num_refine "{{test_runs.num_refine}}"
-             --num_tsteps "{{test_runs.num_tsteps}}"
-             --stages_per_ts "{{test_runs.stages_per_ts}}"
-             --checksum_freq "{{test_runs.checksum_freq}}"
-             --num_objects "{{test_runs.num_objects}}"
-             ${objectString}'
-#             --object 
-#               "{{test_runs.obj1_type}}"
-#               "{{test_runs.obj1_bounce}}"
-#               "{{test_runs.obj1_center_x}}"
-#               "{{test_runs.obj1_center_y}}"
-#               "{{test_runs.obj1_center_z}}"
-#               "{{test_runs.obj1_move_1}}"
-#               "{{test_runs.obj1_move_2}}"
-#               "{{test_runs.obj1_move_3}}"
-#               "{{test_runs.obj1_size_x}}"
-#               "{{test_runs.obj1_size_y}}"
-#               "{{test_runs.obj1_size_z}}"
-#               "{{test_runs.obj1_inc_x}}"
-#               "{{test_runs.obj1_inc_y}}"
-#               "{{test_runs.obj1_inc_z}}"
-#             --object
-#               "{{test_runs.obj2_type}}"
-#               "{{test_runs.obj2_bounce}}"
-#               "{{test_runs.obj2_center_x}}"
-#               "{{test_runs.obj2_center_y}}"
-#               "{{test_runs.obj2_center_z}}"
-#               "{{test_runs.obj2_move_1}}"
-#               "{{test_runs.obj2_move_2}}"
-#               "{{test_runs.obj2_move_3}}"
-#               "{{test_runs.obj2_size_x}}"
-#               "{{test_runs.obj2_size_y}}"
-#               "{{test_runs.obj2_size_z}}"
-#               "{{test_runs.obj2_inc_x}}"
-#               "{{test_runs.obj2_inc_y}}"
-#               "{{test_runs.obj2_inc_z}}"
-#                &> {{test_runs.id}}.out'
-#          - cd ../
-#          - mv ref/{{test_runs.id}}.out {{test_runs.id}}.out
-#          - cat {{test_runs.id}}.out
+          - if [[ {{test_runs.num_objects}} -eq 1 ]] 
+          - then 
+          -    cd ref
+          -    processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
+          -    'srun --ntasks=$processes miniAMR.x 
+                --nx "{{test_runs.nx}}"
+                --ny "{{test_runs.ny}}"
+                --nz "{{test_runs.nz}}"
+                --init_x "{{test_runs.init_x}}"
+                --init_y "{{test_runs.init_y}}"
+                --init_z "{{test_runs.init_z}}"
+                --npx "{{test_runs.npx}}"
+                --npy "{{test_runs.npy}}"
+                --npz "{{test_runs.npz}}"
+                --max_blocks "{{test_runs.max_blocks}}"
+                --num_refine "{{test_runs.num_refine}}"
+                --num_tsteps "{{test_runs.num_tsteps}}"
+                --stages_per_ts "{{test_runs.stages_per_ts}}"
+                --checksum_freq "{{test_runs.checksum_freq}}"
+                --num_objects "{{test_runs.num_objects}}"
+                --object 
+                  "{{test_runs.obj0_type}}"
+                  "{{test_runs.obj0_bounce}}"
+                  "{{test_runs.obj0_center_x}}"
+                  "{{test_runs.obj0_center_y}}"
+                  "{{test_runs.obj0_center_z}}"
+                  "{{test_runs.obj0_move_1}}"
+                  "{{test_runs.obj0_move_2}}"
+                  "{{test_runs.obj0_move_3}}"
+                  "{{test_runs.obj0_size_x}}"
+                  "{{test_runs.obj0_size_y}}"
+                  "{{test_runs.obj0_size_z}}"
+                  "{{test_runs.obj0_inc_x}}"
+                  "{{test_runs.obj0_inc_y}}"
+                  "{{test_runs.obj0_inc_z}}"
+                  &> {{test_runs.id}}.out'
+          -   cd ../
+          -   mv ref/{{test_runs.id}}.out {{test_runs.id}}.out
+          -   cat {{test_runs.id}}.out
+          - else
+          -   exit 1
+          - fi
                     
    result_parse: 
        constant:
@@ -133,65 +251,184 @@ miniamr:
              const: "{{test_runs.checksum_freq}}"
            num_objects:
              const: "{{test_runs.num_objects}}"
-           object0_type:
-             const: "{{test_runs.obj1_type}}"
            object0_bounce:
-             const: "{{test_runs.obj1_bounce}}"
+             const: "{{test_runs.obj0_bounce}}"
            object0_center_x:
-             const: "{{test_runs.obj1_center_x}}"
+             const: "{{test_runs.obj0_center_x}}"
            object0_center_y:
-             const: "{{test_runs.obj1_center_y}}"
+             const: "{{test_runs.obj0_center_y}}"
            object0_center_z:
-             const: "{{test_runs.obj1_center_z}}"
+             const: "{{test_runs.obj0_center_z}}"
            object0_move_1:
-             const: "{{test_runs.obj1_move_1}}"
+             const: "{{test_runs.obj0_move_1}}"
            object0_move_2:
-             const: "{{test_runs.obj1_move_2}}"
+             const: "{{test_runs.obj0_move_2}}"
            object0_move_3:
-             const: "{{test_runs.obj1_move_3}}"
+             const: "{{test_runs.obj0_move_3}}"
            object0_size_x:
-             const: "{{test_runs.obj1_size_x}}"
+             const: "{{test_runs.obj0_size_x}}"
            object0_size_y:
-             const: "{{test_runs.obj1_size_y}}"
+             const: "{{test_runs.obj0_size_y}}"
            object0_size_z:
-             const: "{{test_runs.obj1_size_z}}"
+             const: "{{test_runs.obj0_size_z}}"
            object0_inc_x:
-             const: "{{test_runs.obj1_inc_x}}"
+             const: "{{test_runs.obj0_inc_x}}"
            object0_inc_y:
-             const: "{{test_runs.obj1_inc_y}}"
+             const: "{{test_runs.obj0_inc_y}}"
            object0_inc_z:
+             const: "{{test_runs.obj0_inc_z}}"
+objects_2:
+   summary: 'runs miniAMR test when num_nodes = 2'
+   inherits_from: _base
+   slurm:
+      num_nodes: 1
+   variables:
+      test_runs:
+          - { id: "test_2", nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '4', npy: '2', npz: '2', max_blocks: '4000', num_refine: '4', num_tsteps: '100', stages_per_ts: '16', checksum_freq: '4', num_objects: '2', obj0_type: '2', obj0_bounce: '0', obj0_center_x: '-1.10', obj0_center_y: '-1.10', obj0_center_z: '-1.10', obj0_move_1: '0.030', obj0_move_2: '0.030', obj0_move_3: '0.030', obj0_size_x: '1.5', obj0_size_y: '1.5', obj0_size_z: '1.5', obj0_inc_x: '0.0', obj0_inc_y: '0.0', obj0_inc_z: '0.0', obj1_type: '2', obj1_bounce: '0', obj1_center_x: '0.5', obj1_center_y: '0.5', obj1_center_z: '1.76', obj1_move_1: '0.0', obj1_move_2: '0.0', obj1_move_3: '-0.025', obj1_size_x: '0.75', obj1_size_y: '0.75', obj1_size_z: '0.75', obj1_inc_x: '0.0', obj1_inc_y: '0.0', obj1_inc_z: '0.0' }
+   
+   run:
+      cmds:
+          - if [[ {{test_runs.num_objects}} -eq 2 ]]
+          - then
+          -    cd ref
+          -    processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
+          -    'srun -n $processes miniAMR.x 
+                --nx "{{test_runs.nx}}"
+                --ny "{{test_runs.ny}}"
+                --nz "{{test_runs.nz}}"
+                --init_x "{{test_runs.init_x}}"
+                --init_y "{{test_runs.init_y}}"
+                --init_z "{{test_runs.init_z}}"
+                --npx "{{test_runs.npx}}"
+                --npy "{{test_runs.npy}}"
+                --npz "{{test_runs.npz}}"
+                --max_blocks "{{test_runs.max_blocks}}"
+                --num_refine "{{test_runs.num_refine}}"
+                --num_tsteps "{{test_runs.num_tsteps}}"
+                --stages_per_ts "{{test_runs.stages_per_ts}}"
+                --checksum_freq "{{test_runs.checksum_freq}}"
+                --num_objects "{{test_runs.num_objects}}"
+                --object 
+                  "{{test_runs.obj0_type}}"
+                  "{{test_runs.obj0_bounce}}"
+                  "{{test_runs.obj0_center_x}}"
+                  "{{test_runs.obj0_center_y}}"
+                  "{{test_runs.obj0_center_z}}"
+                  "{{test_runs.obj0_move_1}}"
+                  "{{test_runs.obj0_move_2}}"
+                  "{{test_runs.obj0_move_3}}"
+                  "{{test_runs.obj0_size_x}}"
+                  "{{test_runs.obj0_size_y}}"
+                  "{{test_runs.obj0_size_z}}"
+                  "{{test_runs.obj0_inc_x}}"
+                  "{{test_runs.obj0_inc_y}}"
+                  "{{test_runs.obj0_inc_z}}"
+                --object
+                  "{{test_runs.obj1_type}}"
+                  "{{test_runs.obj1_bounce}}"
+                  "{{test_runs.obj1_center_x}}"
+                  "{{test_runs.obj1_center_y}}"
+                  "{{test_runs.obj1_center_z}}"
+                  "{{test_runs.obj1_move_1}}"
+                  "{{test_runs.obj1_move_2}}"
+                  "{{test_runs.obj1_move_3}}"
+                  "{{test_runs.obj1_size_x}}"
+                  "{{test_runs.obj1_size_y}}"
+                  "{{test_runs.obj1_size_z}}"
+                  "{{test_runs.obj1_inc_x}}"
+                  "{{test_runs.obj1_inc_y}}"
+                  "{{test_runs.obj1_inc_z}}"
+                  &> {{test_runs.id}}.out'
+          -   cd ../
+          -   mv ref/{{test_runs.id}}.out {{test_runs.id}}.out
+          -   cat {{test_runs.id}}.out
+          - else
+          -   exit 1
+          - fi
+
+   result_parse:
+       constant:
+           nx:
+             const: "{{test_runs.nx}}"
+           ny:
+             const: "{{test_runs.ny}}"
+           nz:
+             const: "{{test_runs.nz}}"
+           init_x:
+             const: "{{test_runs.init_x}}"
+           init_y:
+             const: "{{test_runs.init_y}}"
+           init_z: 
+             const: "{{test_runs.init_z}}"
+           npx:
+             const: "{{test_runs.npx}}"
+           npy:
+             const: "{{test_runs.npy}}"
+           npz:
+             const: "{{test_runs.npz}}"
+           max_blocks:
+             const: "{{test_runs.max_blocks}}"
+           num_refine:
+             const: "{{test_runs.num_refine}}"
+           stages_per_ts:
+             const: "{{test_runs.stages_per_ts}}"
+           checksum_freq:
+             const: "{{test_runs.checksum_freq}}"
+           num_objects:
+             const: "{{test_runs.num_objects}}"
+           object0_type:
+             const: "{{test_runs.obj0_type}}"
+           object0_bounce:
+             const: "{{test_runs.obj0_bounce}}"
+           object0_center_x:
+             const: "{{test_runs.obj0_center_x}}"
+           object0_center_y:
+             const: "{{test_runs.obj0_center_y}}"
+           object0_center_z:
+             const: "{{test_runs.obj0_center_z}}"
+           object0_move_1:
+             const: "{{test_runs.obj0_move_1}}"
+           object0_move_2:
+             const: "{{test_runs.obj0_move_2}}"
+           object0_move_3:
+             const: "{{test_runs.obj0_move_3}}"
+           object0_size_x:
+             const: "{{test_runs.obj0_size_x}}"
+           object0_size_y:
+             const: "{{test_runs.obj0_size_y}}"
+           object0_size_z:
+             const: "{{test_runs.obj0_size_z}}"
+           object0_inc_x:
+             const: "{{test_runs.obj0_inc_x}}"
+           object0_inc_y:
+             const: "{{test_runs.obj0_inc_y}}"
+           object0_inc_z:
+             const: "{{test_runs.obj0_inc_z}}"
+           object1_type:
+             const: "{{test_runs.obj1_type}}"
+           object1_bounce:
+             const: "{{test_runs.obj1_bounce}}"
+           object1_center_x:
+             const: "{{test_runs.obj1_center_x}}"
+           object1_center_y:
+             const: "{{test_runs.obj1_center_y}}"
+           object1_center_z:
+             const: "{{test_runs.obj1_center_z}}"
+           object1_move_1:
+             const: "{{test_runs.obj1_move_1}}"
+           object1_move_2:
+             const: "{{test_runs.obj1_move_2}}"
+           object1_move_3:
+             const: "{{test_runs.obj1_move_3}}"
+           object1_size_x:
+             const: "{{test_runs.obj1_size_x}}"
+           object1_size_y:
+             const: "{{test_runs.obj1_size_y}}"
+           object1_size_z:
+             const: "{{test_runs.obj1_size_z}}"
+           object1_inc_x:
+             const: "{{test_runs.obj1_inc_x}}"
+           object1_inc_y:
+             const: "{{test_runs.obj1_inc_y}}"
+           object1_inc_z:
              const: "{{test_runs.obj1_inc_z}}"
-           
-#       regex:
-#           load_balanacing_algorithm: 
-#               regex: 'Load\s+balance\s+by\s+(\S+)\s+'
-#               files: '{{test_runs.id}}.out'
-#           final_ranks:
-#               regex: 'Summary\:\s+ranks\s+(\d+)\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           time_steps:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+(\d+)\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           total_time:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+(\S+)\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           calc:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+(\S+)\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           max_comm:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+(\S+)\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           min_red:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+(\S+)\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           total_refine:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+(\S+)\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           blocks_per_ts:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+(\S+)\s+max_blocks\s+\d+\s*'
-#               files: '{{test_runs.id}}.out'
-#           final_max_blocks:
-#               regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+(\d+)\s*'
-#               files: '{{test_runs.id}}.out'
-
-
