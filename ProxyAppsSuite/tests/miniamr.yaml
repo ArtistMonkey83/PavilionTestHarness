@@ -136,8 +136,209 @@ _base:
 #           interblock_comm_min:
 #           interblock_comm_max:
            
-           
-           
+           num_refinement_steps:
+               regex: 'Number\s+of\s+refinement\s+steps\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           num_load_balance:
+               regex: 'Number\s+of\s+load\s+balance\s+steps\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           num_redist_steps:
+               regex: 'Number\s+of\s+redistributing\s+steps\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           total_blocks:
+               regex: 'Total\s+blocks\s+\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           block_timestep_ave:
+               regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+(\S+)\s+\d+\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           block_timestep_min:
+               regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+\S+\s+(\d+)\s+\d+\s*'
+               files: '{{test_runs.id}}.out'
+           block_timestep_max:
+               regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+\S+\s+\d+\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           max_blockOnProcessor:
+               regex: 'Max\s+blocks\s+on\s+a\s+processor\s+at\s+any\s+time\:\s+(\d+)\s*'           
+               files: '{{test_runs.id}}.out'
+           total_blocksSplit:
+               regex: 'total\s+blocks\s+split\s+\:\s+(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           total_blocksReformed:
+               regex: 'total\s+blocks\s+reformed\s+\:\s+(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           total_blocksMoved:
+               regex: 'total\s+blocks\s+moved\s+\:\s+(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           total_moved_loadBal:
+               regex: 'total\s+moved\s+load\s+bal\s+\:\s+(\S+)'
+               files: '{{test_runs.id}}.out'
+           total_moved_redist:
+               regex: 'total\s+moved\s+redistribut\:\s+(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           total_moved_coasting:
+               regex: 'total\s+moved\s+coasening\s+\:\s+(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksSplit_ave:
+               regex: 'total\s+blocks\s+split\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksSplit_std:
+               regex: 'total\s+blocks\s+split\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksSplit_min:
+               regex: 'total\s+blocks\s+split\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksSplit_max:
+               regex: 'total\s+blocks\s+split\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksReformed_ave:
+               regex: 'total\s+blocks\s+reformed\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksReformed_std:
+               regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksReformed_min:
+               regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksReformed_max:
+               regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksMoved_ave:
+               regex: 'Total\s+blocks\s+moved\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksMoved_std:
+               regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksMoved_min:
+               regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcessTotal_blocksMoved_max:
+               regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedLoadBal_ave:
+               regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedLoadBal_std:
+               regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedLoadBal_min:
+               regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedLoadBal_max:
+               regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedRedist_ave:
+               regex: 'Blocks\s+moved\s+redistribu\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedRedist_std:
+               regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedRedist_min:
+               regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedRedist_max:
+               regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedCoarsening_ave:
+               regex: 'Blocks\s+moved\s+coarsening\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedCoarsening_std:
+               regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedCoarsening_min:
+               regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           perProcess_blocksMovedCoarsening_max:
+               regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_compareObjects_ave:
+               regex: 'compare\s+objects\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_compareObjects_std:
+               regex: 'compare\s+objects\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'  
+               files: '{{test_runs.id}}.out' 
+          meshTime_compareObjects_min:
+               regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_compareObjects_max:
+               regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_refineCoarsen_ave:
+               regex: 'mark\s+refine\/coarsen\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_refineCoarsen_std:
+               regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_refineCoarsen_min:
+               regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_refineCoarsen_max:
+               regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock1_ave:
+               regex: 'communicate\s+block\s+1\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock1_std:
+               regex: 'communicate\s+block\s+1\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock1_min:
+               regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock1_max:
+               regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_splitBlocks_ave:
+               regex: 'split\s+blocks\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_splitBlocks_std:
+               regex: 'split\s+blocks\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_splitBlocks_min:
+               regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_splitBlocks_max:
+               regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock2_ave:
+               regex: 'communicate\s+block\s+2\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock2_std:
+               regex: 'communicate\s+block\s+2\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock2_min:
+               regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_commBlock2_max:
+               regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_syncTime_ave:
+               regex: 'sync\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_syncTime_std:
+               regex: 'sync\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_syncTime_min:
+               regex: 'sync\s+time\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_syncTime_max:
+               regex: 'sync\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_miscTime_ave:
+               regex: 'misc\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_miscTime_std:
+               regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_miscTime_min:
+               regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+          meshTime_miscTime_max:
+               regex: 'misc\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+
+         
+           num_plot_steps:
+               regex: 'Number\s+of\s+plot\s+steps\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out' 
            final_ranks:
                regex: 'Summary\:\s+ranks\s+(\d+)\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
                files: '{{test_runs.id}}.out'
