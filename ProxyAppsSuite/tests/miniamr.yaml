@@ -1,12 +1,12 @@
 _base:
-   summary: building the miniAMR test
+   summary: 'building miniAMR test_applies a stencil calculation on a unit cube computational domain'
    build:
       modules: [ gcc, openmpi ]
-      source_path: miniAMR
       env:
          CC: mpicc
       cmds:
-          - cd ref 
+          - git clone https://github.com/Mantevo/miniAMR
+          - cd miniAMR/ref 
           - make || exit 1
    scheduler: slurm
    subtitle: "{{test_runs.id}}"
@@ -115,14 +115,8 @@ _base:
                regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
                files: '{{test_runs.id}}.out'
            
-           # Computational Performace Times
-#           comp_time_ave:
-#           comp_time_std:
-#           comp_time_min:
-#           comp_time_max:
-
            totalGFLOPS:
-               regex: 'total\s+GFLOPS\:\s+(\S+)F'
+               regex: 'total\s+GFLOPS\:\s+(\S+)'
                files: '{{test_runs.id}}.out'
            averageGFLOPS:
                regex: 'Average\s+GFLOPS\s+per\s+rank\:\s+(\S+)'
@@ -131,11 +125,253 @@ _base:
                regex: 'Total\s+floating\s+point\s+ops\:\s+(\S+)'
                files: '{{test_runs.id}}.out'
             
-#           interblock_comm_time:
-#           interblock_comm_std:
-#           interblock_comm_min:
-#           interblock_comm_max:
-           
+           interblock_commTime_ave:
+               regex: '\s+Total\s+\:\s(\S+)\s\S+\s\S+\s\S+'
+               files: '{{test_runs.id}}.out'
+           interblock_commTime_std:
+               regex: '\s+Total\s+\:\s\S+\s(\S+)\s\S+\s\S+'
+               files: '{{test_runs.id}}.out'
+           interblock_commTime_min:
+               regex: '\s+Total\s+\:\s\S+\s\S+\s(\S+)\s\S+'
+               files: '{{test_runs.id}}.out'
+           interblock_commTime_max:
+               regex: '\s+Total\s+\:\s\S+\s\S+\s\S+\s(\S+)'
+               files: '{{test_runs.id}}.out'
+           interblock_postIRecv_ave:
+               regex: 'Post\s+IRecv\s+\:\s+(\S+)\s\S+\s\S+\s\S+'
+               files: '{{test_runs.id}}.out'
+           interblock_postIRecv_std:
+               regex: 'Post\s+IRecv\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_postIRecv_min:
+               regex: 'Post\s+IRecv\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_postIRecv_max:
+               regex: 'Post\s+IRecv\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_packFaces_ave:
+               regex: 'Pack\s+faces\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_packFaces_std:
+               regex: 'Pack\s+faces\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_packFaces_min:
+               regex: 'Pack\s+faces\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_packFaces_max:
+               regex: 'Pack\s+faces\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_sendMes_ave:
+               regex: 'Send\s+messages\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_sendMes_std:
+               regex: 'Send\s+messages\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_sendMes_min:
+               regex: 'Send\s+messages\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_sendMes_max:
+               regex: 'Send\s+messages\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeSameLev_ave:
+               regex: 'Exchange\s+same\s+level\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeSameLev_std:
+               regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeSameLev_min:
+               regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeSameLev_max:
+               regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeDiffLev_ave:
+               regex: 'Exchange\s+diff\s+level\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeDiffLev_std:
+               regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeDiffLev_min:
+               regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_exchangeDiffLev_max:
+               regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_applyBC_ave:
+               regex: 'Apply\s+BC\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_applyBC_std:
+               regex: 'Apply\s+BC\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_applyBC_min:
+               regex: 'Apply\s+BC\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_applyBC_max:
+               regex: 'Apply\s+BC\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_waitTime_ave:
+               regex: 'Wait\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_waitTime_std:
+               regex: 'Wait\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_waitTime_min:
+               regex: 'Wait\s+time\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_waitTime_max:
+               regex: 'Wait\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_unpackFaces_ave:
+               regex: 'Unpack\s+faces\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_unpackFaces_std:
+               regex: 'Unpack\s+faces\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_unpackFaces_min:
+               regex: 'Unpack\s+faces\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_unpackFaces_max:
+               regex: 'Unpack\s+faces\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesReceived_ave:
+               regex: 'Messages\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesReceived_std:
+               regex: 'Messages\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesReceived_min:
+               regex: 'Messages\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesReceived_max:
+               regex: 'Messages\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesReceived_ave:
+               regex: 'Bytes\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesReceived_std:
+               regex: 'Bytes\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesReceived_min:
+               regex: 'Bytes\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesReceived_max:
+               regex: 'Bytes\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesReceived_ave:
+               regex: 'Faces\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesReceived_std:
+               regex: 'Faces\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesReceived_min:
+               regex: 'Faces\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesReceived_max:
+               regex: 'Faces\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesSent_ave:
+               regex: 'Messages\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesSent_std:
+               regex: 'Messages\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesSent_min:
+               regex: 'Messages\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_messagesSent_max:
+               regex: 'Messages\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesSent_ave:
+               regex: 'Bytes\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesSent_std:
+               regex: 'Bytes\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesSent_min:
+               regex: 'Bytes\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_bytesSent_max:
+               regex: 'Bytes\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesSent_ave:
+               regex: 'Faces\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesSent_std:
+               regex: 'Faces\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesSent_min:
+               regex: 'Faces\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesSent_max:
+               regex: 'Faces\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedSame_ave:
+               regex: 'Faces\s+exchanged\s+same\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedSame_std:
+               regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedSame_min:
+               regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedSame_max:
+               regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedDiff_ave:
+               regex: 'Faces\s+exchanged\s+diff\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedDiff_std:
+               regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedDiff_min:
+               regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesExchangedDiff_max:
+               regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesBCApplied_ave:
+               regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesBCApplied_std:
+               regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesBCApplied_min:
+               regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           interblock_facesBCApplied_max:
+               regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+          
+           gridSum_red_ave:
+               regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s\S+\s\S+\s+\S+\s*' 
+               files: '{{test_runs.id}}.out'
+           gridSum_red_std:
+               regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s(\S+)\s\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_red_min:
+               regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'      
+           gridSum_red_max:
+               regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_calc_ave:
+               regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s\S+\s\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_calc_std:
+               regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s(\S+)\s\S+\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_calc_min:
+               regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s(\S+)\s+\S+\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_calc_max:
+               regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s\S+\s+(\S+)\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_totalNumber:
+               regex: 'total\s+number\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
+           gridSum_numPerTimeStep:
+               regex: 'number\s+per\s+timestep\:\s+(\d+)\s*'
+               files: '{{test_runs.id}}.out'
            num_refinement_steps:
                regex: 'Number\s+of\s+refinement\s+steps\:\s+(\d+)\s*'
                files: '{{test_runs.id}}.out'
@@ -250,92 +486,126 @@ _base:
            perProcess_blocksMovedCoarsening_max:
                regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_compareObjects_ave:
+           meshTime_compareObjects_ave:
                regex: 'compare\s+objects\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_compareObjects_std:
+           meshTime_compareObjects_std:
                regex: 'compare\s+objects\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'  
                files: '{{test_runs.id}}.out' 
-          meshTime_compareObjects_min:
+           meshTime_compareObjects_min:
                regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_compareObjects_max:
+           meshTime_compareObjects_max:
                regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_refineCoarsen_ave:
+           meshTime_refineCoarsen_ave:
                regex: 'mark\s+refine\/coarsen\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_refineCoarsen_std:
+           meshTime_refineCoarsen_std:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_refineCoarsen_min:
+           meshTime_refineCoarsen_min:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_refineCoarsen_max:
+           meshTime_refineCoarsen_max:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock1_ave:
+           meshTime_commBlock1_ave:
                regex: 'communicate\s+block\s+1\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock1_std:
+           meshTime_commBlock1_std:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock1_min:
+           meshTime_commBlock1_min:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock1_max:
+           meshTime_commBlock1_max:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_splitBlocks_ave:
+           meshTime_splitBlocks_ave:
                regex: 'split\s+blocks\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_splitBlocks_std:
+           meshTime_splitBlocks_std:
                regex: 'split\s+blocks\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_splitBlocks_min:
+           meshTime_splitBlocks_min:
                regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_splitBlocks_max:
+           meshTime_splitBlocks_max:
                regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock2_ave:
+           meshTime_commBlock2_ave:
                regex: 'communicate\s+block\s+2\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock2_std:
+           meshTime_commBlock2_std:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock2_min:
+           meshTime_commBlock2_min:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_commBlock2_max:
+           meshTime_commBlock2_max:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_syncTime_ave:
+           meshTime_syncTime_ave:
                regex: 'sync\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_syncTime_std:
+           meshTime_syncTime_std:
                regex: 'sync\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_syncTime_min:
+           meshTime_syncTime_min:
                regex: 'sync\s+time\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_syncTime_max:
+           meshTime_syncTime_max:
                regex: 'sync\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_miscTime_ave:
+           meshTime_miscTime_ave:
                regex: 'misc\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_miscTime_std:
+           meshTime_miscTime_std:
                regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_miscTime_min:
+           meshTime_miscTime_min:
                regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
                files: '{{test_runs.id}}.out'
-          meshTime_miscTime_max:
+           meshTime_miscTime_max:
                regex: 'misc\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
                files: '{{test_runs.id}}.out'
-
-         
+           meshTime_totalCoarsenBlocks_ave:
+               regex: 'total\s+coarsen\s+blocks\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalCoarsenBlocks_std:
+               regex: 'total\s+coarsen\s+blocks\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalCoarsenBlocks_min:
+               regex: 'total\s+coarsen\s+blocks\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalCoarsenBlocks_max:
+               regex: 'total\s+coarsen\s+blocks\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalRedist_ave:
+               regex: 'total\s+redistribute\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalRedist_std:
+               regex: 'total\s+redistribute\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalRedist_min:
+               regex: 'total\s+redistribute\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalRedist_max:
+               regex: 'total\s+redistribute\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalLoadBal_ave:
+               regex: 'total\s+load\s+balance\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalLoadBal_std:
+               regex: 'total\s+load\s+balance\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalLoadBal_min:
+               regex: 'total\s+load\s+balance\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
+               files: '{{test_runs.id}}.out'
+           meshTime_totalLoadBal_max:
+               regex: 'total\s+load\s+balance\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
+               files: '{{test_runs.id}}.out'
            num_plot_steps:
                regex: 'Number\s+of\s+plot\s+steps\:\s+(\d+)\s*'
                files: '{{test_runs.id}}.out' 
@@ -367,7 +637,6 @@ _base:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+(\d+)\s*'
                files: '{{test_runs.id}}.out' 
    
-
 objects_1:
    summary: 'runs the miniAMR test when num_nodes = 1'
    inherits_from: _base
