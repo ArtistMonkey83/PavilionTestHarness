@@ -638,7 +638,7 @@ _base:
                files: '{{test_runs.id}}.out' 
    
 objects_1:
-   summary: 'runs the miniAMR test when num_nodes = 1'
+   summary: 'runs the miniAMR test when num_objects = 1'
    inherits_from: _base
    slurm:
      num_nodes: 7
@@ -748,7 +748,7 @@ objects_1:
            object0_inc_z:
              const: "{{test_runs.obj0_inc_z}}"
 objects_2:
-   summary: 'runs miniAMR test when num_nodes = 2'
+   summary: 'runs miniAMR test when num_objects = 2'
    inherits_from: _base
    slurm:
       num_nodes: 1
