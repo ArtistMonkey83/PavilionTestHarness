@@ -9,6 +9,7 @@ xsbench:
     build:
         modules: [gcc, openmpi]
         source_path: XSBench
+        source_url: https://github.com/ANL-CESAR/XSBench/archive/master.zip
         env:
             CC: mpicc
         cmds:
