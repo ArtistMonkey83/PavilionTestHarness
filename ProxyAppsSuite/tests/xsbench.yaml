@@ -8,8 +8,7 @@ xsbench:
     inherits_from: _base
     build:
         modules: [gcc, openmpi]
-        source_path: XSBench
-        source_url: https://github.com/ANL-CESAR/XSBench/archive/master.zip
+        source_path: xsbench.zip
         env:
             CC: mpicc
         cmds:
