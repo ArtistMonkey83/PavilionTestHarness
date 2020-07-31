@@ -1,6 +1,7 @@
 _base:
-   summary: 'building miniAMR test_applies a stencil calculation on a unit cube computational domain'
+   summary: 'Apply a stencil calculation on a unit cube computational domain'
    build:
+      summary: building the miniAMR test
       modules: [ gcc, openmpi ]
       env:
          CC: mpicc
@@ -9,7 +10,7 @@ _base:
           - cd miniAMR/ref 
           - make || exit 1
    scheduler: slurm
-   subtitle: "{{test_runs.id}}"
+   subtitle: "{{test_input.id}}"
    run:
        timeout: 1200
        modules: [ gcc, openmpi ]
@@ -17,888 +18,879 @@ _base:
        regex:
            result:
                regex: '================\s+Start\s+report\s+==================='
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            algorithm:
                regex: 'Initial\s+ranks\s+arranged\s+by\s+(\S+)\s+across\s+machine\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_variables:
                regex: 'Calculate\s+on\s+(\d+)\s+variables\s+with\s+\d+\s+point\s+stencil\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            point_stencil:
                regex: 'Calculate\s+on\s+\d+\s+variables\s+with\s+(\d+)\s+point\s+stencil\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            variable_error_tolerance:
                regex: 'Error\s+tolorance\s+for\s+variable\s+sums\s+is\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            test_time_ave:
                regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            test_time_std:
                regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            test_time_min:
                regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            test_time_max:
                regex: 'Total\s+time\s+for\s+test\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_malloc_calls_ave:
                regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_malloc_calls_std:
                regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_malloc_calls_min:
                regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_malloc_calls_max:
                regex: 'Number\s+of\s+malloc\s+calls\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_ave:
                regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_std:
                regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_min:
                regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_max:
                regex: 'Amount\s+malloced\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_init_ave:
                regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_init_std:
                regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_init_min:
                regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_init_max:
                regex: 'Malloc\s+calls\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_init_ave:
                regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_init_std:
                regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_init_min:
                regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_init_max:
                regex: 'Amount\s+malloced\s+in\s+init\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_timestepping_ave:
                regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_timestepping_std:
                regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_timestepping_min:
                regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            malloc_timestepping_max:
                regex: 'Malloc\s+calls\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_timestepping_avg:
                regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+(\S+)\s+\S+\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_timestepping_std:
                regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+(\S+)\s+\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_timestepping_min:
                regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            amount_malloced_timestepping_max:
                regex: 'Amount\s+malloced\s+in\s+timestepping\:\s+ave\,\s+std\,\s+min\,\s+max\:\s+\S+\s+\S+\s+\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            
            totalGFLOPS:
                regex: 'total\s+GFLOPS\:\s+(\S+)'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            averageGFLOPS:
                regex: 'Average\s+GFLOPS\s+per\s+rank\:\s+(\S+)'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_pt_ops:
                regex: 'Total\s+floating\s+point\s+ops\:\s+(\S+)'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
             
            interblock_commTime_ave:
                regex: '\s+Total\s+\:\s(\S+)\s\S+\s\S+\s\S+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_commTime_std:
                regex: '\s+Total\s+\:\s\S+\s(\S+)\s\S+\s\S+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_commTime_min:
                regex: '\s+Total\s+\:\s\S+\s\S+\s(\S+)\s\S+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_commTime_max:
                regex: '\s+Total\s+\:\s\S+\s\S+\s\S+\s(\S+)'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_postIRecv_ave:
                regex: 'Post\s+IRecv\s+\:\s+(\S+)\s\S+\s\S+\s\S+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_postIRecv_std:
                regex: 'Post\s+IRecv\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_postIRecv_min:
                regex: 'Post\s+IRecv\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_postIRecv_max:
                regex: 'Post\s+IRecv\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_packFaces_ave:
                regex: 'Pack\s+faces\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_packFaces_std:
                regex: 'Pack\s+faces\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_packFaces_min:
                regex: 'Pack\s+faces\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_packFaces_max:
                regex: 'Pack\s+faces\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_sendMes_ave:
                regex: 'Send\s+messages\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_sendMes_std:
                regex: 'Send\s+messages\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_sendMes_min:
                regex: 'Send\s+messages\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_sendMes_max:
                regex: 'Send\s+messages\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeSameLev_ave:
                regex: 'Exchange\s+same\s+level\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeSameLev_std:
                regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeSameLev_min:
                regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeSameLev_max:
                regex: 'Exchange\s+same\s+level\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeDiffLev_ave:
                regex: 'Exchange\s+diff\s+level\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeDiffLev_std:
                regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeDiffLev_min:
                regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_exchangeDiffLev_max:
                regex: 'Exchange\s+diff\s+level\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_applyBC_ave:
                regex: 'Apply\s+BC\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_applyBC_std:
                regex: 'Apply\s+BC\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_applyBC_min:
                regex: 'Apply\s+BC\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_applyBC_max:
                regex: 'Apply\s+BC\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_waitTime_ave:
                regex: 'Wait\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_waitTime_std:
                regex: 'Wait\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_waitTime_min:
                regex: 'Wait\s+time\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_waitTime_max:
                regex: 'Wait\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_unpackFaces_ave:
                regex: 'Unpack\s+faces\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_unpackFaces_std:
                regex: 'Unpack\s+faces\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_unpackFaces_min:
                regex: 'Unpack\s+faces\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_unpackFaces_max:
                regex: 'Unpack\s+faces\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesReceived_ave:
                regex: 'Messages\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesReceived_std:
                regex: 'Messages\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesReceived_min:
                regex: 'Messages\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesReceived_max:
                regex: 'Messages\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesReceived_ave:
                regex: 'Bytes\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesReceived_std:
                regex: 'Bytes\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesReceived_min:
                regex: 'Bytes\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesReceived_max:
                regex: 'Bytes\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesReceived_ave:
                regex: 'Faces\s+received\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesReceived_std:
                regex: 'Faces\s+received\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesReceived_min:
                regex: 'Faces\s+received\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesReceived_max:
                regex: 'Faces\s+received\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesSent_ave:
                regex: 'Messages\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesSent_std:
                regex: 'Messages\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesSent_min:
                regex: 'Messages\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_messagesSent_max:
                regex: 'Messages\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesSent_ave:
                regex: 'Bytes\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesSent_std:
                regex: 'Bytes\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesSent_min:
                regex: 'Bytes\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_bytesSent_max:
                regex: 'Bytes\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesSent_ave:
                regex: 'Faces\s+sent\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesSent_std:
                regex: 'Faces\s+sent\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesSent_min:
                regex: 'Faces\s+sent\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesSent_max:
                regex: 'Faces\s+sent\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedSame_ave:
                regex: 'Faces\s+exchanged\s+same\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedSame_std:
                regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedSame_min:
                regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedSame_max:
                regex: 'Faces\s+exchanged\s+same\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedDiff_ave:
                regex: 'Faces\s+exchanged\s+diff\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedDiff_std:
                regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedDiff_min:
                regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesExchangedDiff_max:
                regex: 'Faces\s+exchanged\s+diff\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesBCApplied_ave:
                regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesBCApplied_std:
                regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesBCApplied_min:
                regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            interblock_facesBCApplied_max:
                regex: 'Faces\s+with\s+BC\s+applied\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
           
            gridSum_red_ave:
                regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s\S+\s\S+\s+\S+\s*' 
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_red_std:
                regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s(\S+)\s\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_red_min:
                regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'      
+               files: '{{test_input.id}}.out'      
            gridSum_red_max:
                regex: 'red\s+\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_calc_ave:
                regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+(\S+)\s\S+\s\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_calc_std:
                regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s(\S+)\s\S+\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_calc_min:
                regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s(\S+)\s+\S+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_calc_max:
                regex: 'calc\:\s+ave\,\s+stddev\,\s+min\,\s+max\s+\(sec\)\:\s+\S+\s\S+\s\S+\s+(\S+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_totalNumber:
                regex: 'total\s+number\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            gridSum_numPerTimeStep:
                regex: 'number\s+per\s+timestep\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_refinement_steps:
                regex: 'Number\s+of\s+refinement\s+steps\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_load_balance:
                regex: 'Number\s+of\s+load\s+balance\s+steps\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_redist_steps:
                regex: 'Number\s+of\s+redistributing\s+steps\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_blocks:
                regex: 'Total\s+blocks\s+\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            block_timestep_ave:
                regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+(\S+)\s+\d+\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            block_timestep_min:
                regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+\S+\s+(\d+)\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            block_timestep_max:
                regex: 'Blocks\/timestep\s+ave\,\s+min\,\s+max\s+\:\s+\S+\s+\d+\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            max_blockOnProcessor:
                regex: 'Max\s+blocks\s+on\s+a\s+processor\s+at\s+any\s+time\:\s+(\d+)\s*'           
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_blocksSplit:
                regex: 'total\s+blocks\s+split\s+\:\s+(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_blocksReformed:
                regex: 'total\s+blocks\s+reformed\s+\:\s+(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_blocksMoved:
                regex: 'total\s+blocks\s+moved\s+\:\s+(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_moved_loadBal:
                regex: 'total\s+moved\s+load\s+bal\s+\:\s+(\S+)'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_moved_redist:
                regex: 'total\s+moved\s+redistribut\:\s+(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_moved_coasting:
                regex: 'total\s+moved\s+coasening\s+\:\s+(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksSplit_ave:
                regex: 'total\s+blocks\s+split\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksSplit_std:
                regex: 'total\s+blocks\s+split\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksSplit_min:
                regex: 'total\s+blocks\s+split\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksSplit_max:
                regex: 'total\s+blocks\s+split\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksReformed_ave:
                regex: 'total\s+blocks\s+reformed\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksReformed_std:
                regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksReformed_min:
                regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksReformed_max:
                regex: 'total\s+blocks\s+reformed\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksMoved_ave:
                regex: 'Total\s+blocks\s+moved\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksMoved_std:
                regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksMoved_min:
                regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcessTotal_blocksMoved_max:
                regex: 'Total\s+blocks\s+moved\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedLoadBal_ave:
                regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedLoadBal_std:
                regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedLoadBal_min:
                regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedLoadBal_max:
                regex: 'Blocks\s+moved\s+load\s+bal\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedRedist_ave:
                regex: 'Blocks\s+moved\s+redistribu\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedRedist_std:
                regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedRedist_min:
                regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedRedist_max:
                regex: 'Blocks\s+moved\s+redistribu\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedCoarsening_ave:
                regex: 'Blocks\s+moved\s+coarsening\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedCoarsening_std:
                regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedCoarsening_min:
                regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            perProcess_blocksMovedCoarsening_max:
                regex: 'Blocks\s+moved\s+coarsening\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_compareObjects_ave:
                regex: 'compare\s+objects\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_compareObjects_std:
                regex: 'compare\s+objects\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'  
-               files: '{{test_runs.id}}.out' 
+               files: '{{test_input.id}}.out' 
            meshTime_compareObjects_min:
                regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_compareObjects_max:
                regex: 'compare\s+objects\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_refineCoarsen_ave:
                regex: 'mark\s+refine\/coarsen\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_refineCoarsen_std:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_refineCoarsen_min:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_refineCoarsen_max:
                regex: 'mark\s+refine\/coarsen\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock1_ave:
                regex: 'communicate\s+block\s+1\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock1_std:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock1_min:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock1_max:
                regex: 'communicate\s+block\s+1\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_splitBlocks_ave:
                regex: 'split\s+blocks\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_splitBlocks_std:
                regex: 'split\s+blocks\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_splitBlocks_min:
                regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_splitBlocks_max:
                regex: 'split\s+blocks\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock2_ave:
                regex: 'communicate\s+block\s+2\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock2_std:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock2_min:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_commBlock2_max:
                regex: 'communicate\s+block\s+2\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_syncTime_ave:
                regex: 'sync\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_syncTime_std:
                regex: 'sync\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_syncTime_min:
                regex: 'sync\s+time\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_syncTime_max:
                regex: 'sync\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_miscTime_ave:
                regex: 'misc\s+time\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_miscTime_std:
                regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_miscTime_min:
                regex: 'misc\s+time\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_miscTime_max:
                regex: 'misc\s+time\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalCoarsenBlocks_ave:
                regex: 'total\s+coarsen\s+blocks\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalCoarsenBlocks_std:
                regex: 'total\s+coarsen\s+blocks\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalCoarsenBlocks_min:
                regex: 'total\s+coarsen\s+blocks\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalCoarsenBlocks_max:
                regex: 'total\s+coarsen\s+blocks\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalRedist_ave:
                regex: 'total\s+redistribute\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalRedist_std:
                regex: 'total\s+redistribute\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalRedist_min:
                regex: 'total\s+redistribute\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalRedist_max:
                regex: 'total\s+redistribute\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalLoadBal_ave:
                regex: 'total\s+load\s+balance\s+\:\s+(\S+)\s\S+\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalLoadBal_std:
                regex: 'total\s+load\s+balance\s+\:\s+\S+\s(\S+)\s\S+\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalLoadBal_min:
                regex: 'total\s+load\s+balance\s+\:\s+\S+\s\S+\s(\S+)\s\S+\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            meshTime_totalLoadBal_max:
                regex: 'total\s+load\s+balance\s+\:\s+\S+\s\S+\s\S+\s(\S+)\s+'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            num_plot_steps:
                regex: 'Number\s+of\s+plot\s+steps\:\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out' 
+               files: '{{test_input.id}}.out' 
            final_ranks:
                regex: 'Summary\:\s+ranks\s+(\d+)\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            time_steps:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+(\d+)\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_time:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+(\S+)\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            calc:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+(\S+)\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            max_comm:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+(\S+)\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            min_red:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+(\S+)\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            total_refine:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+(\S+)\s+blocks\/ts\s+\S+\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            blocks_per_ts:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+(\S+)\s+max_blocks\s+\d+\s*'
-               files: '{{test_runs.id}}.out'
+               files: '{{test_input.id}}.out'
            final_max_blocks:
                regex: 'Summary\:\s+ranks\s+\d+\s+ts\s+\d+\s+time\s+\S+\s+calc\s+\S+\s+max\s+comm\s+\S+\s+min\s+red\s+\S+\s+refine\s+\S+\s+blocks\/ts\s+\S+\s+max_blocks\s+(\d+)\s*'
-               files: '{{test_runs.id}}.out' 
+               files: '{{test_input.id}}.out' 
    
+
 objects_1:
-   summary: 'runs the miniAMR test when num_objects = 1'
+   summary: 'runs the miniAMR test when num_nodes = 1'
    inherits_from: _base
    slurm:
      num_nodes: 7
    variables:
-         test_runs:
+         test_input:
           - { id: 'test_1', nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '3', npy: '3', npz: '3', max_blocks: '9000', num_refine: '4', num_tsteps: '100', stages_per_ts: '20', checksum_freq: '1', num_objects: '1', obj0_type: '2', obj0_bounce: '0', obj0_center_x: '-1.71', obj0_center_y: '-1.71', obj0_center_z: '-1.71', obj0_move_1: '0.04', obj0_move_2: '0.04', obj0_move_3: '0.04', obj0_size_x: '1.7', obj0_size_y: '1.7', obj0_size_z: '1.7', obj0_inc_x: '0.0', obj0_inc_y: '0.0', obj0_inc_z: '0.0' }
 
    run:
       cmds:
-          - if [[ {{test_runs.num_objects}} -eq 1 ]] 
-          - then 
-          -    cd ref
-          -    processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
+          -    cd miniAMR/ref
+          -    processes={{ test_input.npx * test_input.npy * test_input.npz }}
           -    'srun --ntasks=$processes miniAMR.x 
-                --nx "{{test_runs.nx}}"
-                --ny "{{test_runs.ny}}"
-                --nz "{{test_runs.nz}}"
-                --init_x "{{test_runs.init_x}}"
-                --init_y "{{test_runs.init_y}}"
-                --init_z "{{test_runs.init_z}}"
-                --npx "{{test_runs.npx}}"
-                --npy "{{test_runs.npy}}"
-                --npz "{{test_runs.npz}}"
-                --max_blocks "{{test_runs.max_blocks}}"
-                --num_refine "{{test_runs.num_refine}}"
-                --num_tsteps "{{test_runs.num_tsteps}}"
-                --stages_per_ts "{{test_runs.stages_per_ts}}"
-                --checksum_freq "{{test_runs.checksum_freq}}"
-                --num_objects "{{test_runs.num_objects}}"
+                --nx "{{test_input.nx}}"
+                --ny "{{test_input.ny}}"
+                --nz "{{test_input.nz}}"
+                --init_x "{{test_input.init_x}}"
+                --init_y "{{test_input.init_y}}"
+                --init_z "{{test_input.init_z}}"
+                --npx "{{test_input.npx}}"
+                --npy "{{test_input.npy}}"
+                --npz "{{test_input.npz}}"
+                --max_blocks "{{test_input.max_blocks}}"
+                --num_refine "{{test_input.num_refine}}"
+                --num_tsteps "{{test_input.num_tsteps}}"
+                --stages_per_ts "{{test_input.stages_per_ts}}"
+                --checksum_freq "{{test_input.checksum_freq}}"
+                --num_objects "{{test_input.num_objects}}"
                 --object 
-                  "{{test_runs.obj0_type}}"
-                  "{{test_runs.obj0_bounce}}"
-                  "{{test_runs.obj0_center_x}}"
-                  "{{test_runs.obj0_center_y}}"
-                  "{{test_runs.obj0_center_z}}"
-                  "{{test_runs.obj0_move_1}}"
-                  "{{test_runs.obj0_move_2}}"
-                  "{{test_runs.obj0_move_3}}"
-                  "{{test_runs.obj0_size_x}}"
-                  "{{test_runs.obj0_size_y}}"
-                  "{{test_runs.obj0_size_z}}"
-                  "{{test_runs.obj0_inc_x}}"
-                  "{{test_runs.obj0_inc_y}}"
-                  "{{test_runs.obj0_inc_z}}"
-                  &> {{test_runs.id}}.out'
-          -   cd ../
-          -   mv ref/{{test_runs.id}}.out {{test_runs.id}}.out
-          -   cat {{test_runs.id}}.out
-          - else
-          -   exit 1
-          - fi
+                  "{{test_input.obj0_type}}"
+                  "{{test_input.obj0_bounce}}"
+                  "{{test_input.obj0_center_x}}"
+                  "{{test_input.obj0_center_y}}"
+                  "{{test_input.obj0_center_z}}"
+                  "{{test_input.obj0_move_1}}"
+                  "{{test_input.obj0_move_2}}"
+                  "{{test_input.obj0_move_3}}"
+                  "{{test_input.obj0_size_x}}"
+                  "{{test_input.obj0_size_y}}"
+                  "{{test_input.obj0_size_z}}"
+                  "{{test_input.obj0_inc_x}}"
+                  "{{test_input.obj0_inc_y}}"
+                  "{{test_input.obj0_inc_z}}"
+                  &> {{test_input.id}}.out'
+          -   cd ../../
+          -   mv miniAMR/ref/{{test_input.id}}.out {{test_input.id}}.out
+          -   cat {{test_input.id}}.out
                     
    result_parse: 
        constant:
            nx:
-             const: "{{test_runs.nx}}"
+             const: "{{test_input.nx}}"
            ny:
-             const: "{{test_runs.ny}}"
+             const: "{{test_input.ny}}"
            nz:
-             const: "{{test_runs.nz}}"
+             const: "{{test_input.nz}}"
            init_x:
-             const: "{{test_runs.init_x}}"
+             const: "{{test_input.init_x}}"
            init_y:
-             const: "{{test_runs.init_y}}"
+             const: "{{test_input.init_y}}"
            init_z: 
-             const: "{{test_runs.init_z}}"
+             const: "{{test_input.init_z}}"
            npx:
-             const: "{{test_runs.npx}}"
+             const: "{{test_input.npx}}"
            npy:
-             const: "{{test_runs.npy}}"
+             const: "{{test_input.npy}}"
            npz:
-             const: "{{test_runs.npz}}"
+             const: "{{test_input.npz}}"
            max_blocks:
-             const: "{{test_runs.max_blocks}}"
+             const: "{{test_input.max_blocks}}"
            num_refine:
-             const: "{{test_runs.num_refine}}"
+             const: "{{test_input.num_refine}}"
            stages_per_ts:
-             const: "{{test_runs.stages_per_ts}}"
+             const: "{{test_input.stages_per_ts}}"
            checksum_freq:
-             const: "{{test_runs.checksum_freq}}"
+             const: "{{test_input.checksum_freq}}"
            num_objects:
-             const: "{{test_runs.num_objects}}"
+             const: "{{test_input.num_objects}}"
            object0_bounce:
-             const: "{{test_runs.obj0_bounce}}"
+             const: "{{test_input.obj0_bounce}}"
            object0_center_x:
-             const: "{{test_runs.obj0_center_x}}"
+             const: "{{test_input.obj0_center_x}}"
            object0_center_y:
-             const: "{{test_runs.obj0_center_y}}"
+             const: "{{test_input.obj0_center_y}}"
            object0_center_z:
-             const: "{{test_runs.obj0_center_z}}"
+             const: "{{test_input.obj0_center_z}}"
            object0_move_1:
-             const: "{{test_runs.obj0_move_1}}"
+             const: "{{test_input.obj0_move_1}}"
            object0_move_2:
-             const: "{{test_runs.obj0_move_2}}"
+             const: "{{test_input.obj0_move_2}}"
            object0_move_3:
-             const: "{{test_runs.obj0_move_3}}"
+             const: "{{test_input.obj0_move_3}}"
            object0_size_x:
-             const: "{{test_runs.obj0_size_x}}"
+             const: "{{test_input.obj0_size_x}}"
            object0_size_y:
-             const: "{{test_runs.obj0_size_y}}"
+             const: "{{test_input.obj0_size_y}}"
            object0_size_z:
-             const: "{{test_runs.obj0_size_z}}"
+             const: "{{test_input.obj0_size_z}}"
            object0_inc_x:
-             const: "{{test_runs.obj0_inc_x}}"
+             const: "{{test_input.obj0_inc_x}}"
            object0_inc_y:
-             const: "{{test_runs.obj0_inc_y}}"
+             const: "{{test_input.obj0_inc_y}}"
            object0_inc_z:
-             const: "{{test_runs.obj0_inc_z}}"
+             const: "{{test_input.obj0_inc_z}}"
 objects_2:
-   summary: 'runs miniAMR test when num_objects = 2'
+   summary: 'runs miniAMR test when num_nodes = 2'
    inherits_from: _base
    slurm:
       num_nodes: 1
    variables:
-      test_runs:
+      test_input:
           - { id: "test_2", nx: '8', ny: '8', nz: '8', init_x: '1', init_y: '1', init_z: '1', npx: '4', npy: '2', npz: '2', max_blocks: '4000', num_refine: '4', num_tsteps: '100', stages_per_ts: '16', checksum_freq: '4', num_objects: '2', obj0_type: '2', obj0_bounce: '0', obj0_center_x: '-1.10', obj0_center_y: '-1.10', obj0_center_z: '-1.10', obj0_move_1: '0.030', obj0_move_2: '0.030', obj0_move_3: '0.030', obj0_size_x: '1.5', obj0_size_y: '1.5', obj0_size_z: '1.5', obj0_inc_x: '0.0', obj0_inc_y: '0.0', obj0_inc_z: '0.0', obj1_type: '2', obj1_bounce: '0', obj1_center_x: '0.5', obj1_center_y: '0.5', obj1_center_z: '1.76', obj1_move_1: '0.0', obj1_move_2: '0.0', obj1_move_3: '-0.025', obj1_size_x: '0.75', obj1_size_y: '0.75', obj1_size_z: '0.75', obj1_inc_x: '0.0', obj1_inc_y: '0.0', obj1_inc_z: '0.0' }
    
    run:
       cmds:
-          - if [[ {{test_runs.num_objects}} -eq 2 ]]
-          - then
-          -    cd ref
-          -    processes={{ test_runs.npx * test_runs.npy * test_runs.npz }}
+          -    cd miniAMR/ref
+          -    processes={{ test_input.npx * test_input.npy * test_input.npz }}
           -    'srun -n $processes miniAMR.x 
-                --nx "{{test_runs.nx}}"
-                --ny "{{test_runs.ny}}"
-                --nz "{{test_runs.nz}}"
-                --init_x "{{test_runs.init_x}}"
-                --init_y "{{test_runs.init_y}}"
-                --init_z "{{test_runs.init_z}}"
-                --npx "{{test_runs.npx}}"
-                --npy "{{test_runs.npy}}"
-                --npz "{{test_runs.npz}}"
-                --max_blocks "{{test_runs.max_blocks}}"
-                --num_refine "{{test_runs.num_refine}}"
-                --num_tsteps "{{test_runs.num_tsteps}}"
-                --stages_per_ts "{{test_runs.stages_per_ts}}"
-                --checksum_freq "{{test_runs.checksum_freq}}"
-                --num_objects "{{test_runs.num_objects}}"
+                --nx "{{test_input.nx}}"
+                --ny "{{test_input.ny}}"
+                --nz "{{test_input.nz}}"
+                --init_x "{{test_input.init_x}}"
+                --init_y "{{test_input.init_y}}"
+                --init_z "{{test_input.init_z}}"
+                --npx "{{test_input.npx}}"
+                --npy "{{test_input.npy}}"
+                --npz "{{test_input.npz}}"
+                --max_blocks "{{test_input.max_blocks}}"
+                --num_refine "{{test_input.num_refine}}"
+                --num_tsteps "{{test_input.num_tsteps}}"
+                --stages_per_ts "{{test_input.stages_per_ts}}"
+                --checksum_freq "{{test_input.checksum_freq}}"
+                --num_objects "{{test_input.num_objects}}"
                 --object 
-                  "{{test_runs.obj0_type}}"
-                  "{{test_runs.obj0_bounce}}"
-                  "{{test_runs.obj0_center_x}}"
-                  "{{test_runs.obj0_center_y}}"
-                  "{{test_runs.obj0_center_z}}"
-                  "{{test_runs.obj0_move_1}}"
-                  "{{test_runs.obj0_move_2}}"
-                  "{{test_runs.obj0_move_3}}"
-                  "{{test_runs.obj0_size_x}}"
-                  "{{test_runs.obj0_size_y}}"
-                  "{{test_runs.obj0_size_z}}"
-                  "{{test_runs.obj0_inc_x}}"
-                  "{{test_runs.obj0_inc_y}}"
-                  "{{test_runs.obj0_inc_z}}"
+                  "{{test_input.obj0_type}}"
+                  "{{test_input.obj0_bounce}}"
+                  "{{test_input.obj0_center_x}}"
+                  "{{test_input.obj0_center_y}}"
+                  "{{test_input.obj0_center_z}}"
+                  "{{test_input.obj0_move_1}}"
+                  "{{test_input.obj0_move_2}}"
+                  "{{test_input.obj0_move_3}}"
+                  "{{test_input.obj0_size_x}}"
+                  "{{test_input.obj0_size_y}}"
+                  "{{test_input.obj0_size_z}}"
+                  "{{test_input.obj0_inc_x}}"
+                  "{{test_input.obj0_inc_y}}"
+                  "{{test_input.obj0_inc_z}}"
                 --object
-                  "{{test_runs.obj1_type}}"
-                  "{{test_runs.obj1_bounce}}"
-                  "{{test_runs.obj1_center_x}}"
-                  "{{test_runs.obj1_center_y}}"
-                  "{{test_runs.obj1_center_z}}"
-                  "{{test_runs.obj1_move_1}}"
-                  "{{test_runs.obj1_move_2}}"
-                  "{{test_runs.obj1_move_3}}"
-                  "{{test_runs.obj1_size_x}}"
-                  "{{test_runs.obj1_size_y}}"
-                  "{{test_runs.obj1_size_z}}"
-                  "{{test_runs.obj1_inc_x}}"
-                  "{{test_runs.obj1_inc_y}}"
-                  "{{test_runs.obj1_inc_z}}"
-                  &> {{test_runs.id}}.out'
-          -   cd ../
-          -   mv ref/{{test_runs.id}}.out {{test_runs.id}}.out
-          -   cat {{test_runs.id}}.out
-          - else
-          -   exit 1
-          - fi
+                  "{{test_input.obj1_type}}"
+                  "{{test_input.obj1_bounce}}"
+                  "{{test_input.obj1_center_x}}"
+                  "{{test_input.obj1_center_y}}"
+                  "{{test_input.obj1_center_z}}"
+                  "{{test_input.obj1_move_1}}"
+                  "{{test_input.obj1_move_2}}"
+                  "{{test_input.obj1_move_3}}"
+                  "{{test_input.obj1_size_x}}"
+                  "{{test_input.obj1_size_y}}"
+                  "{{test_input.obj1_size_z}}"
+                  "{{test_input.obj1_inc_x}}"
+                  "{{test_input.obj1_inc_y}}"
+                  "{{test_input.obj1_inc_z}}"
+                  &> {{test_input.id}}.out'
+          -   cd ../../
+          -   mv miniAMR/ref/{{test_input.id}}.out {{test_input.id}}.out
+          -   cat {{test_input.id}}.out
 
    result_parse:
        constant:
            nx:
-             const: "{{test_runs.nx}}"
+             const: "{{test_input.nx}}"
            ny:
-             const: "{{test_runs.ny}}"
+             const: "{{test_input.ny}}"
            nz:
-             const: "{{test_runs.nz}}"
+             const: "{{test_input.nz}}"
            init_x:
-             const: "{{test_runs.init_x}}"
+             const: "{{test_input.init_x}}"
            init_y:
-             const: "{{test_runs.init_y}}"
+             const: "{{test_input.init_y}}"
            init_z: 
-             const: "{{test_runs.init_z}}"
+             const: "{{test_input.init_z}}"
            npx:
-             const: "{{test_runs.npx}}"
+             const: "{{test_input.npx}}"
            npy:
-             const: "{{test_runs.npy}}"
+             const: "{{test_input.npy}}"
            npz:
-             const: "{{test_runs.npz}}"
+             const: "{{test_input.npz}}"
            max_blocks:
-             const: "{{test_runs.max_blocks}}"
+             const: "{{test_input.max_blocks}}"
            num_refine:
-             const: "{{test_runs.num_refine}}"
+             const: "{{test_input.num_refine}}"
            stages_per_ts:
-             const: "{{test_runs.stages_per_ts}}"
+             const: "{{test_input.stages_per_ts}}"
            checksum_freq:
-             const: "{{test_runs.checksum_freq}}"
+             const: "{{test_input.checksum_freq}}"
            num_objects:
-             const: "{{test_runs.num_objects}}"
+             const: "{{test_input.num_objects}}"
            object0_type:
-             const: "{{test_runs.obj0_type}}"
+             const: "{{test_input.obj0_type}}"
            object0_bounce:
-             const: "{{test_runs.obj0_bounce}}"
+             const: "{{test_input.obj0_bounce}}"
            object0_center_x:
-             const: "{{test_runs.obj0_center_x}}"
+             const: "{{test_input.obj0_center_x}}"
            object0_center_y:
-             const: "{{test_runs.obj0_center_y}}"
+             const: "{{test_input.obj0_center_y}}"
            object0_center_z:
-             const: "{{test_runs.obj0_center_z}}"
+             const: "{{test_input.obj0_center_z}}"
            object0_move_1:
-             const: "{{test_runs.obj0_move_1}}"
+             const: "{{test_input.obj0_move_1}}"
            object0_move_2:
-             const: "{{test_runs.obj0_move_2}}"
+             const: "{{test_input.obj0_move_2}}"
            object0_move_3:
-             const: "{{test_runs.obj0_move_3}}"
+             const: "{{test_input.obj0_move_3}}"
            object0_size_x:
-             const: "{{test_runs.obj0_size_x}}"
+             const: "{{test_input.obj0_size_x}}"
            object0_size_y:
-             const: "{{test_runs.obj0_size_y}}"
+             const: "{{test_input.obj0_size_y}}"
            object0_size_z:
-             const: "{{test_runs.obj0_size_z}}"
+             const: "{{test_input.obj0_size_z}}"
            object0_inc_x:
-             const: "{{test_runs.obj0_inc_x}}"
+             const: "{{test_input.obj0_inc_x}}"
            object0_inc_y:
-             const: "{{test_runs.obj0_inc_y}}"
+             const: "{{test_input.obj0_inc_y}}"
            object0_inc_z:
-             const: "{{test_runs.obj0_inc_z}}"
+             const: "{{test_input.obj0_inc_z}}"
            object1_type:
-             const: "{{test_runs.obj1_type}}"
+             const: "{{test_input.obj1_type}}"
            object1_bounce:
-             const: "{{test_runs.obj1_bounce}}"
+             const: "{{test_input.obj1_bounce}}"
            object1_center_x:
-             const: "{{test_runs.obj1_center_x}}"
+             const: "{{test_input.obj1_center_x}}"
            object1_center_y:
-             const: "{{test_runs.obj1_center_y}}"
+             const: "{{test_input.obj1_center_y}}"
            object1_center_z:
-             const: "{{test_runs.obj1_center_z}}"
+             const: "{{test_input.obj1_center_z}}"
            object1_move_1:
-             const: "{{test_runs.obj1_move_1}}"
+             const: "{{test_input.obj1_move_1}}"
            object1_move_2:
-             const: "{{test_runs.obj1_move_2}}"
+             const: "{{test_input.obj1_move_2}}"
            object1_move_3:
-             const: "{{test_runs.obj1_move_3}}"
+             const: "{{test_input.obj1_move_3}}"
            object1_size_x:
-             const: "{{test_runs.obj1_size_x}}"
+             const: "{{test_input.obj1_size_x}}"
            object1_size_y:
-             const: "{{test_runs.obj1_size_y}}"
+             const: "{{test_input.obj1_size_y}}"
            object1_size_z:
-             const: "{{test_runs.obj1_size_z}}"
+             const: "{{test_input.obj1_size_z}}"
            object1_inc_x:
-             const: "{{test_runs.obj1_inc_x}}"
+             const: "{{test_input.obj1_inc_x}}"
            object1_inc_y:
-             const: "{{test_runs.obj1_inc_y}}"
+             const: "{{test_input.obj1_inc_y}}"
            object1_inc_z:
-             const: "{{test_runs.obj1_inc_z}}"
+             const: "{{test_input.obj1_inc_z}}"
