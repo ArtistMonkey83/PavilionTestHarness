@@ -1,25 +1,13 @@
 _base:
     summary: A benchmarking tool designed to maintain constant per-task I/o workload as task count is varied.
     variables:
-        #problem: 
-         #   - { name: "macsio", np: '{{$n}}', interface: '{{$i}}', parallelFmode: '{{$m}}', partType: '{{$pt}}', partDim: '{{$pd}}', partSize: '{{$ps}}',  flags: '-macsio' }
-          #  - { name: "macsioWsilo", np: '$n', interface: '$i', parallelFmode: '$m', pxval: '4', pyval: '3', flags: '-macsioWsilo' }
-           # - { name: "macsioWsiloWhdf5", np: '$n', interface: '$i', parallelFmode: '$m', flags: '-macsioWsiloWhdf5'  }
-          numOfTasks: 93
-          numOfHDF5: 8
-          mode: MIF
-          partDim: 2
-          partType: rectilinear
-          ppTask: 3
-          ppSize: 40000
-
-
+          interface: [ hdf5, silo, miftmpl ] 
     slurm:
-        #can run on multiple nodes
-          num_nodes: 3
+          num_nodes: 2
    
 _build:
     #not used in the build but run section inherits_from: _base
+    inherits_from: _base
     build:
         modules: [cmake, gcc, openmpi/2.1.2, hdf5-parallel]
         source_path: macsio
@@ -34,7 +22,7 @@ _build:
             #SILO requires a patch to work properly
             #- wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
 
-            #Getting Patched MACSio-1.1
+            #Getting MACSio-1.1
             #- wget https://github.com/LLNL/MACSio/archive/v1.1.tar.gz
             
             #Extracting files
@@ -63,63 +51,61 @@ _build:
             - cd MACSio
             - git checkout v1.1
             - cmake -DCMAKE_INSTALL_PREFIX=$MACSIO_PREFIX -DWITH_JSON-CWX_PREFIX=$JSONCWX_PREFIX -DWITH_SILO_PREFIX=$SILO_PREFIX -DENABLE_HDF5_PLUGIN=ON -DWITH_HDF5_PREFIX=$HDF5_ROOT .
-            - make
+            - make -j
             - make install
 
 #Test for running MACSio with out plugins
 macsio:
     inherits_from: _build
+    permute_on: interface
     summary: MACSio test with out plug-ins
     run:
-        modules: 
-            - gcc
-            - openmpi
-            - "hdf5-parallel/1.8.16"
+        modules: [cmake, gcc, openmpi/2.1.2, hdf5-parallel]
         cmds:
-            - export LD_LIBRARY_PATH=$PWD/JSONCWX:$LD_LIBRARY_PATH
-            - export LD_LIBRARY_PATH=$PWD/SILO:$LD_LIBRARY_PATH
-            - srun -n4 $PWD/MACSIO/macsio --interface silo    
-            - srun -n4 $PWD/MACSIO/macsio --interface hdf5    
-            - srun -n4 $PWD/MACSIO/macsio --interface miftmpl    
-   # result_parse:
-  #      regex:
-  #          #resultOrSomeName:
-  #              regex:
- #               action:
+            - export LD_LIBRARY_PATH=${PWD}/SILO/lib:${LD_LIBRARY_PATH}
+            - export LD_LIBRARY_PATH=${PWD}/JSONCWX/lib:${LD_LIBRARY_PATH}
+            - if srun -N2 -n64 $PWD/MACSIO/macsio --interface {{interface}} --avg_num_parts 8 --part_size 100K --parallel_file_mode MIF 32 ; then
+            -    if [[ -f macsio-timings.log ]] ; then 
+            -       while read line ; do 
+            -          if [[ $line =\~ Processor ]] ; then
+            -             printf "%s " $(echo $line|sed 's/-//g'|sed 's/Processor /Processor=/g')
+            -          else
+            -             echo $line
+            -          fi
+            -       done < macsio-timings.log &> {{interface}}-timings-parsed.log
+            -       mv macsio-timings.log {{interface}}-timings.log 
+            -       awk -F',' '$1 \~ /Processor/ {print $3}'  {{interface}}-timings-parsed.log |awk -F'=' '{print $2}' |sed 's/(.*//g' |awk '{sum += $1 } END {print "MIN="sum/NR}' > {{interface}}-results.out
+            -       awk -F',' '$1 \~ /Processor/ {print $4}'  {{interface}}-timings-parsed.log |awk -F'=' '{print $2}' |sed 's/(.*//g' |awk '{sum += $1 } END {print "AVG="sum/NR}' >> {{interface}}-results.out
+            -       awk -F',' '$1 \~ /Processor/ {print $5}'  {{interface}}-timings-parsed.log |awk -F'=' '{print $2}' |sed 's/(.*//g' |awk '{sum += $1 } END {print "MAX="sum/NR}' >> {{interface}}-results.out
+            -       echo "PASS"  >> {{interface}}-results.out
+            -    fi 
+            -    if [[ -f macsio-log.log ]] ; then 
+            -       mv macsio-log.log {{interface}}-log.log
+            -    fi 
+            - else
+            -    echo "FAIL"
+            -    rm macsio-timings.log macsio-log.log
+            - fi 
 
-#Test for running MACSio using Silo plugin
-#macsioWsilo:
-   # inherits_from: _build
-   # summary: MACSio test with plug-in Silo enabled
-   # run:
-   #     cmds:
-   # result_parse:
-       # regex:
-            #variableOrSomeName:
-         #       regex:
-        #        action:
-
-#Test for running MACSio using Silo plugin with HDF5 enabled
-macsioWsiloHDF5:
-    inherits_from: _build
-    summary: MACSio test with plug-in Silo and HDF5 enabled
-    run:
-        cmds:
-            - echo "Running 93 tasks to 8 HDF5 files in Multiple Independent File Mode."
-            - srun -np 93 ./macsio --interface hdf5 --parallel_file_mode MIF 8
-
-            - echo "Running 93 tasks to 1 HDF5 file in Single Shared File Mode."
-            - srun - np 93 ./macsio --interface hdf5 --parallel_file_mode SIF 1
-
-            #- echo "Running {{numOfTasksVariable}} tasks to {{numOfHDF5fileVariable}} HDF5 files in {{modeVariable}}."
-            #- srun -np {{numOfTasksVariable}} ./macsio --interface hdf5 --parallel_file_mode {{modeVariable}} {{numOfHDF5fileVariable}}
-            #
-            #- echo "Running {{numOfTasks}} tasks to {{numOfHDF5}} HDF5 files in {{mode}},on a {{partDim}} dimensional, {{partType}} mesh with {{ppTask}} average parts per task and a nominal I/O request of{{ppSize}} bytes"
-            #- srun -np {{numOfTasks}} ./macsio --interface hdf5 --parallel_file_mode {{mode}} {{numofHDF5}} --avg_num_parts {{ppTask}} --part_size {{ppSize}} --part_dim {{partDim}} --part_type {{partType}}
-            #  
-            #
-    #result_parse:
-     #   regex:
-            #KeywordOrSomeName:
-      #          regex:
-       #         action: 
+    result_parse:
+        constant:
+            interface:
+                const: '{{interface}}' 
+        regex:
+            result:
+                regex: 'PASS'
+                action: store_true
+                files: '{{interface}}-results.out'
+            min:
+                regex: 'MIN=(.*)'
+                action: store
+                files: '{{interface}}-results.out'
+            avg:
+                regex: 'AVG=(.*)'
+                action: store
+                files: '{{interface}}-results.out'
+            max:
+                regex: 'MAX=(.*)'
+                action: store
+                files: '{{interface}}-results.out'
+          
