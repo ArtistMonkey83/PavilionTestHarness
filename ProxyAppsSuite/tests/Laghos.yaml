@@ -46,12 +46,15 @@ laghos:
     
     permute_on: dim_runs
     run:
-        timeout: 2000
+        timeout: 4000
         modules: [ gcc, openmpi/2.1.2 ]
         cmds:
             - cd Laghos
             - if [[ {{dim_runs.problem}} -eq 4 ]]; then
-            -    'srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}"
+            -    'srun -n 8 ./Laghos/laghos 
+                  --problem "{{dim_runs.problem}}" 
+                  "{{dim_runs.dim_flag}}" 
+                  "{{dim_runs.dim_val}}"
                   -rp "{{dim_runs.rp}}"
                   -ok "{{dim_runs.ok}}" 
                   -ot "{{dim_runs.ot}}" 
@@ -59,7 +62,7 @@ laghos:
                   -s "{{dim_runs.s}}"
                   "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out' 
             - else 
-            -    'srun -n 8 ./laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}"
+            -    'srun -n 8 ./Laghos/laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}"
                   -rp "{{dim_runs.rp}}" 
                   -tf "{{dim_runs.tf}}" 
                   "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out'
