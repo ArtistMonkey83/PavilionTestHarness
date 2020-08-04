@@ -1,10 +1,12 @@
 _base:
-   summary: 'Apply a stencil calculation on a unit cube computational domain'
    build:
-      summary: building the miniAMR test
+      timeout: 300
       modules: [ gcc, openmpi ]
       env:
          CC: mpicc
+         env:
+            http_proxy: http://proxyout.lanl.gov:8080
+            https_proxy: https://proxyout.lanl.gov:8080
       cmds:
           - git clone https://github.com/Mantevo/miniAMR
           - cd miniAMR/ref 
