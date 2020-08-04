@@ -10,14 +10,13 @@ _base:
           - cd miniAMR/ref 
           - make || exit 1
    scheduler: slurm
-   subtitle: "{{test_input.id}}"
    run:
        timeout: 1200
        modules: [ gcc, openmpi ]
    result_parse:
        regex:
            result:
-               regex: '================\s+Start\s+report\s+==================='
+               regex: '==================\s+End\s+report\s+===================\s+'
                files: '{{test_input.id}}.out'
            algorithm:
                regex: 'Initial\s+ranks\s+arranged\s+by\s+(\S+)\s+across\s+machine\s*'
