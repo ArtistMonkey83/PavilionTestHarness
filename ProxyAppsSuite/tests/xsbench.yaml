@@ -1,0 +1,84 @@
+_base:
+    summary: Parallelism via OpenMP threading model. Uses unionized, nuclide, hash grid search types.
+    scheduler: slurm
+    slurm:
+        num_nodes: 1
+
+xsbench:
+    inherits_from: _base
+    build:
+        modules: [gcc, openmpi]
+        source_path: xsbench.zip
+        env:
+            CC: mpicc
+        cmds:
+            - cd openmp-threading
+            - make
+    variables:
+        iteration:
+            - { name: "history_unionized", sim_method: "history", search_type: "unionized", size: "large" }
+            - { name: "history_nuclide", sim_method: "history", search_type: "nuclide", size: "small" }
+            - { name: "history_hash", sim_method: "history", search_type: "hash", size: "large" }
+            - { name: "event_unionized", sim_method: "event", search_type: "unionized", size: "large" }
+            - { name: "event_nuclide", sim_method: "event", search_type: "nuclide", size: "small" }
+            - { name: "event_hash", sim_method: "event", search_type: "hash", size: "large" }
+    subtitle: "{{iteration.name}}"
+    permute_on: iteration
+    run:
+        modules: [gcc, openmpi]
+        cmds:
+            - 'cd openmp-threading'
+            - 'srun -n 4 ./XSBench -m "{{iteration.sim_method}}" -s "{{iteration.size}}" -G "{{iteration.search_type}}" &> {{iteration.name}}.out'
+            - 'cat {{iteration.name}}.out'
+            - 'mv {{iteration.name}}.out ../{{iteration.name}}.out'
+    result_parse:
+        constant:
+            test_name:
+                const: '{{iteration.name}}'
+            simulation_method:
+                const: '{{iteration.sim_method}}'
+            grid_type:
+                const: '{{iteration.search_type}}'
+            problem_size:
+                const: '{{iteration.size}}'
+        regex:
+            materials:
+                regex: 'Materials\:\s+(\d+)'
+                action: store
+                files: '{{iteration.name}}.out'
+            total_nuclides:
+                regex: 'Total\sNuclides\:\s+(\d+)'
+                files: '{{iteration.name}}.out'
+            gridpoints_per_nuclide:
+                regex: 'Gridpoints\s\(per\sNuclide\)\:\s+(\d+)'
+                files: '{{iteration.name}}.out'
+            total_xs_lookups:
+                regex: 'Total\sXS\sLookups\:\s+(\d+)'
+                files: '{{iteration.name}}.out'
+            threads_input:
+                regex: 'Threads\:\s+(\d+)'
+                match_type: 'first'
+                files: '{{iteration.name}}.out'
+            mem_usage_mb:
+                regex: 'Est\.\sMemory\sUsage\s\(MB\)\:\s+(\S+)'
+                files: '{{iteration.name}}.out'
+            threads:
+                regex: 'Threads\:\s+(\d+)'
+                match_type: 'last'
+                files: '{{iteration.name}}.out'
+            runtime:
+                regex: 'Runtime\:\s+(\S+)'
+                files: '{{iteration.name}}.out'
+            lookups:
+                regex: 'Lookups\:\s+(\S+)'
+                files: '{{iteration.name}}.out'
+            lookups_per_s:
+                regex: 'Lookups\/s\:\s+(\S+)'
+                files: '{{iteration.name}}.out'
+            verification:
+                regex: 'Verification\schecksum\:\s+\d+\s\(Valid\)'
+                action: 'store_true'
+                files: '{{iteration.name}}.out'
+
+
+
