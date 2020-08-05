@@ -76,8 +76,8 @@ laghos:
                 const: '{{dim_runs.id}}'
         regex:
             results:
-               regex: 'Major kernels total time.*'
-               files: '{{dim_runs.id}}.out'
+                regex: 'Major kernels total time.*'
+                files: '{{dim_runs.id}}.out'
             dims:
                 regex: '--dimension\s+(\d)\s+'
                 files: '{{dim_runs.id}}.out'
