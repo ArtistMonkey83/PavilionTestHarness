@@ -1,0 +1,233 @@
+laghos:
+    summary: Unstructured high-order finite element spatial discretization and explicit high-order time-stepping.
+    subtitle: "{{dim_runs.id}}_{{dim_runs.problem}}"
+    
+    variables:
+         dim_runs:
+           - { id: test1, problem: '0', dim_flag: "-dim", dim_val: '2', rp: '3', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
+           - { id: test2, problem: '0', dim_flag: "-dim", dim_val: '3', rp: '1', ok: '', ot: '', tf: '0.75', s: '', assembly: "-fa"}
+           - { id: test3, problem: '1', dim_flag: "-dim", dim_val: '2', rp: '3', ok: '', ot: '', tf: '0.8', s: '', assembly: "-fa"}
+           - { id: test4, problem: '1', dim_flag: "-dim", dim_val: '3', rp: '2', ok: '', ot: '', tf: '0.6', s: '', assembly: "-fa"}
+           - { id: test5, problem: '2', dim_flag: "-dim", dim_val: '1', rp: '5', ok: '', ot: '', tf: '0.2', s: '', assembly: "-fa"}
+           - { id: test6, problem: '3', dim_flag: "-m", dim_val: 'data/rectangle01_quad.mesh', rp: '2', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
+           - { id: test7, problem: '3', dim_flag: "-m", dim_val: 'data/box01_hex.mesh', rp: '1', ok: '', ot: '', tf: '3.0', s: '', assembly: "-fa"}
+           - { id: test8, problem: '4', dim_flag: "-m", dim_val: "data/square_gresho.mesh", rp: '3', ok: '3', ot: '2', tf: '0.62831853', s: '7', assembly: "-pa"}
+
+    build:
+        modules: [gcc, openmpi/2.1.2]
+#        source_path: laghos
+        env:
+            CC: mpicc
+        cmds:
+            # Gitting the files: Laghos, HYPRE-2.11.0, METIS-4.0.3, MFEM
+#            - mkdir laghos_testsrc
+#            - cd laghos_testsrc
+#            - git clone https://github.com/CEED/Laghos
+#            - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz
+#            - wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
+#            - git clone https://github.com/mfem/mfem
+            # HYPRE / METIS
+            - echo "beginning hypre and metis build"
+            - cd Laghos/
+            - make setup || exit 1
+            - cd ../
+            # MFEM
+            - echo "beginning mfem build"
+            - cd mfem
+            - make parallel -j || exit 1
+            - cd ../
+            # Laghos
+            - echo "beginning laghos build"
+            - cd Laghos
+            - make -j || exit 1
+
+    slurm:
+        num_nodes: 2
+    
+    permute_on: dim_runs
+    run:
+        timeout: 4000
+        modules: [ gcc, openmpi/2.1.2 ]
+        cmds:
+            - cd Laghos
+            - if [[ {{dim_runs.problem}} -eq 4 ]]; then
+            -    'srun -n 8 ./Laghos/laghos 
+                  --problem "{{dim_runs.problem}}" 
+                  "{{dim_runs.dim_flag}}" 
+                  "{{dim_runs.dim_val}}"
+                  -rp "{{dim_runs.rp}}"
+                  -ok "{{dim_runs.ok}}" 
+                  -ot "{{dim_runs.ot}}" 
+                  -tf "{{dim_runs.tf}}" 
+                  -s "{{dim_runs.s}}"
+                  "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out' 
+            - else 
+            -    'srun -n 8 ./Laghos/laghos --problem "{{dim_runs.problem}}" "{{dim_runs.dim_flag}}" "{{dim_runs.dim_val}}"
+                  -rp "{{dim_runs.rp}}" 
+                  -tf "{{dim_runs.tf}}" 
+                  "{{dim_runs.assembly}}" &> {{dim_runs.id}}.out'
+            - fi
+            - cd ../
+            - mv Laghos/{{dim_runs.id}}.out {{dim_runs.id}}.out
+            - cat {{dim_runs.id}}.out 
+    result_parse:
+        constant:
+            test_id:
+                const: '{{dim_runs.id}}'
+        regex:
+            results:
+                regex: 'Major kernels total time.*'
+                files: '{{dim_runs.id}}.out'
+            dims:
+                regex: '--dimension\s+(\d)\s+'
+                files: '{{dim_runs.id}}.out'
+            mesh:
+                regex: '--mesh\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            refine_serial:
+                regex: '--refine-serial\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            refine_parallel:
+                regex: '--refine-parallel\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cartesian_partitioning:
+                regex: '--cartesian-partitioning\s+''(\S*)'''
+                files: '{{dim_runs.id}}.out'
+            problem:
+                regex: '--problem\s+(\d)\s+'
+                files: '{{dim_runs.id}}.out'
+            order_kinematic:
+                regex: '--order-kinematic\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            order_thermo:
+                regex: '--order-thermo\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            order_intrule:
+                regex: '--dimension\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            orde_solver:
+                regex: '--ode-solver\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            t_final:
+                regex: '--t-final\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cfl:
+                regex: '--cfl\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cg_tol:
+                regex: '--cg-tol\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            ftz_tol:
+                regex: '--ftz-tol\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cg_max_steps:
+                regex: '--cg-max-steps\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            max_steps:
+                regex: '--max-steps\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            assembly:
+                regex: '--(\S+)-assembly\s+'
+                files: '{{dim_runs.id}}.out'
+            impose_viscosity:
+                regex: '--no-impose-viscosity\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            visualization:
+                regex: '--no-visualization\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            visualization_steps:
+                regex: '--visualization-steps\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            visit:
+                regex: '--no-visit\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            print:
+                regex: '--no-print\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            outputfile:
+                regex: '--outputfilename\s+(\S+)\s+'
+                action: 'store_true'
+                files: '{{dim_runs.id}}.out'
+            partition:
+                regex: '--partition\s+(\d)\s+'
+                files: '{{dim_runs.id}}.out'
+            device:
+                regex: '--device\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            checks:
+                regex: '--no-checks\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            mem:
+                regex: '--no-mem\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            fom:
+                regex: '--no-fom\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            gpu_aware:
+                regex: '--no-gpu-aware-mpi\s+'
+                action: 'store_false'
+                files: '{{dim_runs.id}}.out'
+            dev: 
+                regex: '--dev\s+(\d)\s*'
+                files: '{{dim_runs.id}}.out'
+            device_configuration:
+                regex: 'Device configuration:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            memory_configuration:
+                regex: 'Memory configuration:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            num_zones_in_serial_mesh:
+                regex: 'Number of zones in the serial mesh:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            non_cartesian_partitioning:
+                regex: 'Non-Cartesian\s+partitioning\s+through\s+(\S+)\s+will\s+be\s+used.\s+'
+                files: '{{dim_runs.id}}.out'
+            zones_min:
+                regex: 'Zones\s+min\/max:\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            zones_max:
+                regex: 'Zones\s+min\/max:\s+\d+\s+(\d+)\s+'
+                files: '{{dim_runs.id}}.out'
+            kinematic_dofs:
+                regex: 'Number\s+of\s+kinematic\s+\(position,\s+velocity\)\s+dofs:\s+(\d+)\s*'
+                files: '{{dim_runs.id}}.out'
+            energy_dofs:
+                regex: 'Number\s+of\s+specific\s+internal\s+energy\s+dofs:\s+(\d+)\s*'
+                files: '{{dim_runs.id}}.out'
+            cgH1_total_time:
+                regex: 'CG\s+\(H1\)\s+total\s+time:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cgH1_rate:
+                regex: 'CG\s+\(H1\)\s+rate\s+\(megadofs\s+x\s+cg_iterations\s+\/\s+second\):\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            cgL2_total_time:
+                regex: 'CG\s+\(L2\)\s+total\s+time:\s+(\S+)\s*'
+                files: '{{dim_runs.id}}.out'
+            cgL2_rate:
+                regex: 'CG\s+\(L2\)\s+rate\s+\(megadofs\s+x\s+cg_iterations\s+\/\s+second\):\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            forces_total_time:
+                regex: 'Forces\s+total\s+time:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            forces_rate:
+                regex: 'Forces rate\s+\(megadofs\s+x\s+timesteps\s+\/\s+second\):\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            update_quad_data_total_time:
+                regex: 'UpdateQuadData\s+total\s+time:\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            update_quad_data_rate:
+                regex: 'UpdateQuadData\s+rate\s+\(megaquads\s+x\s+timesteps\s+\/\s+second\):\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            major_kernels_total_time:
+                regex: 'Major\s+kernels\s+total\s+time\s+\(seconds\):\s+(\S+)\s+'
+                files: '{{dim_runs.id}}.out'
+            major_kernels_rate:
+                regex: 'Major\s+kernels\s+total\s+rate\s+\(megadofs\s+x\s+time\s+steps\s+\/\s+second\):\s+(\S+)\s*'
+                files: '{{dim_runs.id}}.out'  
